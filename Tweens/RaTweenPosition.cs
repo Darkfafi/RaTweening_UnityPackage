@@ -70,4 +70,36 @@ namespace RaTweening
 
 		#endregion
 	}
+
+	#region Extensions
+
+	public static class RaTweenPositionExtensions
+	{
+		public static RaTweenBase TweenMoveX(this Transform self, float posX, AnimationCurve easing, float delay = 0f)
+		{
+			return RaTweeningCore.Instance.RegisterTween(new RaTweenPosition(self, Vector3.right * posX, easing, delay));
+		}
+
+		public static RaTweenBase TweenMoveY(this Transform self, float posY, AnimationCurve easing, float delay = 0f)
+		{
+			return RaTweeningCore.Instance.RegisterTween(new RaTweenPosition(self, Vector3.up * posY, easing, delay));
+		}
+
+		public static RaTweenBase TweenMoveZ(this Transform self, float posZ, AnimationCurve easing, float delay = 0f)
+		{
+			return RaTweeningCore.Instance.RegisterTween(new RaTweenPosition(self, Vector3.forward * posZ, easing, delay));
+		}
+
+		public static RaTweenBase TweenMove(this Transform self, Vector3 pos, AnimationCurve easing, float delay = 0f)
+		{
+			return RaTweeningCore.Instance.RegisterTween(new RaTweenPosition(self, pos, easing, delay));
+		}
+
+		public static RaTweenBase TweenMove(this Transform self, Vector3 startPos, Vector3 endPos, AnimationCurve easing, float delay = 0f)
+		{
+			return RaTweeningCore.Instance.RegisterTween(new RaTweenPosition(self, startPos, endPos, easing, delay));
+		}
+	}
+
+	#endregion
 }

@@ -4,15 +4,14 @@ namespace RaTweening
 {
 	internal class RaTweenTimeline
 	{
-		#region Variables
-
-		public readonly float Duration;
-
-		#endregion
-
 		#region Properties
 
 		public float Time
+		{
+			get; private set;
+		}
+
+		public float Duration
 		{
 			get; private set;
 		}
@@ -39,10 +38,15 @@ namespace RaTweening
 		public RaTweenTimeline(float duration)
 		{
 			Time = 0f;
-			Duration = Mathf.Max(0f, duration);
+			SetDuration(duration);
 		}
 
 		#region Public Methods
+
+		public void SetDuration(float duration)
+		{
+			Duration = Mathf.Max(0f, duration);
+		}
 
 		public void Reset()
 		{

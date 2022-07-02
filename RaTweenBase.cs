@@ -46,20 +46,40 @@ namespace RaTweening
 
 		public RaTweenBase(AnimationCurve easing, float delay)
 		{
-			_delay = new RaTweenTimeline(delay);
-
-			float duration = 0f;
-			if(easing.keys.Length > 0)
-			{
-				duration = easing.keys[easing.keys.Length - 1].time;
-			}
-			_process = new RaTweenTimeline(duration);
-			_easing = easing;
-
+			_delay = new RaTweenTimeline(0f);
+			_process = new RaTweenTimeline(0f);
+			
 			TweenState = State.None;
+
+			SetEasing(easing);
+			SetDelay(delay);
 		}
 
 		#region Public Methods
+
+		public RaTweenBase SetDelay(float delay)
+		{
+			if(CanBeModified())
+			{
+				_delay.SetDuration(delay);
+			}
+			return this;
+		}
+
+		public RaTweenBase SetEasing(AnimationCurve easing)
+		{
+			if(CanBeModified())
+			{
+				float duration = 0f;
+				if(easing.keys.Length > 0)
+				{
+					duration = easing.keys[easing.keys.Length - 1].time;
+				}
+				_process = new RaTweenTimeline(duration);
+				_easing = easing;
+			}
+			return this;
+		}
 
 		public RaTweenBase Clone()
 		{
@@ -118,6 +138,18 @@ namespace RaTweening
 
 		#region Protected Methods
 
+		private bool CanBeModified()
+		{
+			switch(TweenState)
+			{
+				case State.None:
+				case State.ToStart:
+					return true;
+				default:
+					return false;
+			}
+		}
+
 		protected virtual void OnSetup()
 		{
 		
@@ -159,6 +191,7 @@ namespace RaTweening
 		{
 			None,
 			ToStart,
+			InDelay,
 			Started,
 			InProgress,
 			Completed,

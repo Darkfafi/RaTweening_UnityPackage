@@ -49,12 +49,18 @@ namespace RaTweening
 				switch(tween.TweenState)
 				{
 					case RaTweenBase.State.ToStart:
+						tween.Setup();
+						tween.SetState(RaTweenBase.State.InDelay);
+						goto case RaTweenBase.State.InDelay;
+
+					case RaTweenBase.State.InDelay:
 						tween.StepDelay(Time.deltaTime);
 						if(tween.HasNoDelayRemaining)
 						{
 							tween.SetState(RaTweenBase.State.Started);
 						}
 						break;
+
 					case RaTweenBase.State.InProgress:
 						tween.StepTween(Time.deltaTime);
 						if(tween.IsCompleted)
@@ -101,20 +107,21 @@ namespace RaTweening
 
 		#region Internal Methods
 
-		internal void RegisterTween(RaTweenBase tween)
+		internal RaTweenBase RegisterTween(RaTweenBase tween)
 		{
 			if(tween.TweenState == RaTweenBase.State.None)
 			{
 				_tweens.Add(tween);
 				tween.SetState(RaTweenBase.State.ToStart);
-				tween.Setup();
 #if UNITY_EDITOR
 				name = string.Concat(Name, "(", _tweens.Count, ")");
 #endif
 			}
+
+			return tween;
 		}
 
-		internal void UnregisterTween(RaTweenBase tween)
+		internal RaTweenBase UnregisterTween(RaTweenBase tween)
 		{
 			if(tween.TweenState != RaTweenBase.State.None)
 			{
@@ -123,6 +130,8 @@ namespace RaTweening
 				name = string.Concat(Name, "(", _tweens.Count, ")");
 #endif
 			}
+
+			return tween;
 		}
 
 		#endregion
