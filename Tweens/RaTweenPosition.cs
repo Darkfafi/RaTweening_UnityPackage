@@ -10,7 +10,7 @@ namespace RaTweening
 
 		[SerializeField]
 		private Transform _target = default;
-		
+
 		[SerializeField]
 		private Vector3 _startPos = Vector3.zero;
 
@@ -27,6 +27,12 @@ namespace RaTweening
 		public override bool IsValid => _target != null;
 
 		#endregion
+
+		public RaTweenPosition()
+			: this(null, Vector3.zero, Vector3.zero, default, 0f)
+		{
+
+		}
 
 		public RaTweenPosition(Transform target, Vector3 startPos, Vector3 endPos, AnimationCurve easing, float delay)
 			: base(easing, delay)
@@ -57,7 +63,9 @@ namespace RaTweening
 
 		protected override RaTweenBase CloneSelf()
 		{
-			return new RaTweenPosition(_target, _startPos, _endPos, Easing, Delay);
+			RaTweenPosition tween = new RaTweenPosition(_target, _startPos, _endPos, Easing, Delay);
+			tween._dynamicStartPosition = _dynamicStartPosition;
+			return tween;
 		}
 
 		protected override void Evaluate(float normalizedValue)
@@ -104,6 +112,38 @@ namespace RaTweening
 		public static RaTweenBase TweenMove(this Transform self, Vector3 startPos, Vector3 endPos, AnimationCurve easing, float delay = 0f)
 		{
 			return RaTweeningCore.Instance.RegisterTween(new RaTweenPosition(self, startPos, endPos, easing, delay));
+		}
+	}
+
+	#endregion
+
+	#region Extensions
+
+	public static class RaTweenRotationExtensions
+	{
+		public static RaTweenBase TweenRotateX(this Transform self, float rotX, AnimationCurve easing, float delay = 0f)
+		{
+			return RaTweeningCore.Instance.RegisterTween(new RaTweenRotation(self, Vector3.right * rotX, easing, delay));
+		}
+
+		public static RaTweenBase TweenRotateY(this Transform self, float rotY, AnimationCurve easing, float delay = 0f)
+		{
+			return RaTweeningCore.Instance.RegisterTween(new RaTweenRotation(self, Vector3.up * rotY, easing, delay));
+		}
+
+		public static RaTweenBase TweenRotateZ(this Transform self, float rotZ, AnimationCurve easing, float delay = 0f)
+		{
+			return RaTweeningCore.Instance.RegisterTween(new RaTweenRotation(self, Vector3.forward * rotZ, easing, delay));
+		}
+
+		public static RaTweenBase TweenRotate(this Transform self, Vector3 rot, AnimationCurve easing, float delay = 0f)
+		{
+			return RaTweeningCore.Instance.RegisterTween(new RaTweenRotation(self, rot, easing, delay));
+		}
+
+		public static RaTweenBase TweenRotate(this Transform self, Vector3 startRot, Vector3 endRot, AnimationCurve easing, float delay = 0f)
+		{
+			return RaTweeningCore.Instance.RegisterTween(new RaTweenRotation(self, startRot, endRot, easing, delay));
 		}
 	}
 

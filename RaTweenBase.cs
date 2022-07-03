@@ -1,6 +1,5 @@
-﻿using UnityEngine;
-using UnityEngine.Events;
-using System;
+﻿using System;
+using UnityEngine;
 
 namespace RaTweening
 {
@@ -11,7 +10,7 @@ namespace RaTweening
 		private Action _onSetupEvent;
 		private Action _onStartEvent;
 		private Action _onCompletedEvent;
-		private Action _onKillEvent;
+		private Action _onKillEvent; 
 
 		#endregion
 
@@ -73,6 +72,11 @@ namespace RaTweening
 
 		#region Public Methods
 
+		public RaTweenBase Play()
+		{
+			return RaTweeningCore.Instance.RegisterTween(this);
+		}
+
 		public RaTweenBase Kill()
 		{
 			SetStateInternal(State.Dead);
@@ -128,6 +132,8 @@ namespace RaTweening
 		{
 			if(CanBeModified())
 			{
+				easing = easing ?? AnimationCurve.Linear(0f, 0f, 0f, 0f);
+
 				float duration = 0f;
 				if(easing.keys.Length > 0)
 				{
