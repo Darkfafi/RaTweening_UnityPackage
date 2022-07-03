@@ -22,6 +22,12 @@ namespace RaTweening
 
 		#endregion
 
+		#region Properties
+
+		public override bool IsValid => _target != null;
+
+		#endregion
+
 		public RaTweenPosition(Transform target, Vector3 startPos, Vector3 endPos, AnimationCurve easing, float delay)
 			: base(easing, delay)
 		{

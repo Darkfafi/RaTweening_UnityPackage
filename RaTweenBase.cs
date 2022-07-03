@@ -1,9 +1,20 @@
 ﻿using UnityEngine;
+using UnityEngine.Events;
+using System;
 
 namespace RaTweening
 {
 	public abstract class RaTweenBase
 	{
+		#region Events
+
+		private Action _onSetupEvent;
+		private Action _onStartEvent;
+		private Action _onCompletedEvent;
+		private Action _onKillEvent;
+
+		#endregion
+
 		#region Editor Variables
 
 		[SerializeField]
@@ -19,6 +30,11 @@ namespace RaTweening
 		#endregion
 
 		#region Properties
+
+		public abstract bool IsValid
+		{
+			get;
+		}
 
 		// Delay
 		public float Delay => _delay.Duration;
@@ -57,6 +73,48 @@ namespace RaTweening
 
 		#region Public Methods
 
+		public RaTweenBase Kill()
+		{
+			SetStateInternal(State.Dead);
+			return this;
+		}
+
+		public RaTweenBase ListenToSetup(Action callback)
+		{
+			if(CanBeModified())
+			{
+				_onSetupEvent += callback;
+			}
+			return this;
+		}
+
+		public RaTweenBase ListenToStart(Action callback)
+		{
+			if(CanBeModified())
+			{
+				_onStartEvent += callback;
+			}
+			return this;
+		}
+
+		public RaTweenBase ListenToComplete(Action callback)
+		{
+			if(CanBeModified())
+			{
+				_onCompletedEvent += callback;
+			}
+			return this;
+		}
+
+		public RaTweenBase ListenToKill(Action callback)
+		{
+			if(CanBeModified())
+			{
+				_onKillEvent += callback;
+			}
+			return this;
+		}
+
 		public RaTweenBase SetDelay(float delay)
 		{
 			if(CanBeModified())
@@ -91,45 +149,57 @@ namespace RaTweening
 
 		#region Internal Methods
 
-		internal void Setup()
+		internal void SetupInternal()
 		{
 			_delay.Reset();
 			_process.Reset();
 			OnSetup();
+			_onSetupEvent?.Invoke();
 		}
 
-		internal void Start()
+		internal void StartInternal()
 		{
 			_process.Reset();
+			
 			OnStart();
+			_onStartEvent?.Invoke();
+
 			PerformEvaluation();
 		}
 
-		internal void StepDelay(float deltaTime)
+		internal void StepDelayInternal(float deltaTime)
 		{
 			_delay.Step(deltaTime);
 		}
 
-		internal void StepTween(float deltaTime)
+		internal void StepTweenInternal(float deltaTime)
 		{
 			_process.Step(deltaTime);
 			PerformEvaluation();
 		}
 
-		internal void Kill()
+		internal void KillInternal()
 		{
 			OnKill();
+			_onKillEvent?.Invoke();
+			
 			Dispose();
+
+			_onKillEvent = null;
+			_onCompletedEvent = null;
+			_onStartEvent = null;
+			_onSetupEvent = null;
 		}
 
-		internal void Complete()
+		internal void CompleteInternal()
 		{
 			_process.Complete();
 			OnComplete();
+			_onCompletedEvent?.Invoke();
 			PerformEvaluation();
 		}
 
-		internal void SetState(State state)
+		internal void SetStateInternal(State state)
 		{
 			TweenState = state;
 		}
@@ -138,7 +208,7 @@ namespace RaTweening
 
 		#region Protected Methods
 
-		private bool CanBeModified()
+		protected bool CanBeModified()
 		{
 			switch(TweenState)
 			{

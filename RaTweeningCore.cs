@@ -45,51 +45,58 @@ namespace RaTweening
 			{
 				RaTweenBase tween = _tweens[i];
 
-				// Stepping
-				switch(tween.TweenState)
+				if(tween.IsValid)
 				{
-					case RaTweenBase.State.ToStart:
-						tween.Setup();
-						tween.SetState(RaTweenBase.State.InDelay);
-						goto case RaTweenBase.State.InDelay;
+					// Stepping
+					switch(tween.TweenState)
+					{
+						case RaTweenBase.State.ToStart:
+							tween.SetupInternal();
+							tween.SetStateInternal(RaTweenBase.State.InDelay);
+							goto case RaTweenBase.State.InDelay;
 
-					case RaTweenBase.State.InDelay:
-						tween.StepDelay(Time.deltaTime);
-						if(tween.HasNoDelayRemaining)
-						{
-							tween.SetState(RaTweenBase.State.Started);
-						}
-						break;
+						case RaTweenBase.State.InDelay:
+							tween.StepDelayInternal(Time.deltaTime);
+							if(tween.HasNoDelayRemaining)
+							{
+								tween.SetStateInternal(RaTweenBase.State.Started);
+							}
+							break;
 
-					case RaTweenBase.State.InProgress:
-						tween.StepTween(Time.deltaTime);
-						if(tween.IsCompleted)
-						{
-							tween.SetState(RaTweenBase.State.Completed);
-						}
-						break;
+						case RaTweenBase.State.InProgress:
+							tween.StepTweenInternal(Time.deltaTime);
+							if(tween.IsCompleted)
+							{
+								tween.SetStateInternal(RaTweenBase.State.Completed);
+							}
+							break;
+					}
+				}
+				else
+				{
+					tween.SetStateInternal(RaTweenBase.State.Dead);
 				}
 
 				// State Switching
 				switch(tween.TweenState)
 				{
 					case RaTweenBase.State.Started:
-						tween.Start();
+						tween.StartInternal();
 						if(tween.IsCompleted)
 						{
-							tween.SetState(RaTweenBase.State.Completed);
+							tween.SetStateInternal(RaTweenBase.State.Completed);
 						}
 						else
 						{
-							tween.SetState(RaTweenBase.State.InProgress);
+							tween.SetStateInternal(RaTweenBase.State.InProgress);
 						}
 						break;
 					case RaTweenBase.State.Completed:
-						tween.Complete();
-						tween.SetState(RaTweenBase.State.Dead);
+						tween.CompleteInternal();
+						tween.SetStateInternal(RaTweenBase.State.Dead);
 						break;
 					case RaTweenBase.State.Dead:
-						tween.Kill();
+						tween.KillInternal();
 						_killedTweens.Add(tween);
 						break;
 				}
@@ -112,7 +119,7 @@ namespace RaTweening
 			if(tween.TweenState == RaTweenBase.State.None)
 			{
 				_tweens.Add(tween);
-				tween.SetState(RaTweenBase.State.ToStart);
+				tween.SetStateInternal(RaTweenBase.State.ToStart);
 #if UNITY_EDITOR
 				name = string.Concat(Name, "(", _tweens.Count, ")");
 #endif
