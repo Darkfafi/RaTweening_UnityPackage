@@ -1,9 +1,9 @@
 ﻿using System;
-using UnityEngine;
+using RaTweening.Core;
 
 namespace RaTweening
 {
-	public abstract class RaTweenBase
+	public abstract class RaTweenCore
 	{
 		#region Events
 
@@ -11,13 +11,6 @@ namespace RaTweening
 		private Action _onStartEvent;
 		private Action _onCompletedEvent;
 		private Action _onKillEvent; 
-
-		#endregion
-
-		#region Editor Variables
-
-		[SerializeField]
-		private AnimationCurve _easing = AnimationCurve.Linear(0f, 0f, 1f, 1f);
 
 		#endregion
 
@@ -43,15 +36,16 @@ namespace RaTweening
 		// Process
 		public float Duration => _process.Duration;
 		public float Progress => _process.Progress;
+		public float Time => _process.Time;
 
 		// Total
+		public float TotalTime => _delay.Time + Time;
 		public bool IsEmpty => _delay.IsEmpty && _process.IsEmpty;
 		public float TotalDuration => Delay + Duration;
 		public float TotalProgress => IsEmpty ? 0f : (_delay.Time + _process.Time) / TotalDuration;
 		public bool IsCompleted => _process.IsCompleted && HasNoDelayRemaining;
 
 		// Core
-		public AnimationCurve Easing => _easing;
 		public State TweenState
 		{
 			get; private set;
@@ -59,31 +53,31 @@ namespace RaTweening
 
 		#endregion
 
-		public RaTweenBase(AnimationCurve easing, float delay)
+		public RaTweenCore(float duration, float delay)
 		{
 			_delay = new RaTweenTimeline(0f);
 			_process = new RaTweenTimeline(0f);
 			
 			TweenState = State.None;
 
-			SetEasing(easing);
+			SetDuration(duration);
 			SetDelay(delay);
 		}
 
 		#region Public Methods
 
-		public RaTweenBase Play()
+		public RaTweenCore Play()
 		{
 			return RaTweeningCore.Instance.RegisterTween(this);
 		}
 
-		public RaTweenBase Kill()
+		public RaTweenCore Kill()
 		{
 			SetStateInternal(State.Dead);
 			return this;
 		}
 
-		public RaTweenBase ListenToSetup(Action callback)
+		public RaTweenCore ListenToSetup(Action callback)
 		{
 			if(CanBeModified())
 			{
@@ -92,7 +86,7 @@ namespace RaTweening
 			return this;
 		}
 
-		public RaTweenBase ListenToStart(Action callback)
+		public RaTweenCore ListenToStart(Action callback)
 		{
 			if(CanBeModified())
 			{
@@ -101,7 +95,7 @@ namespace RaTweening
 			return this;
 		}
 
-		public RaTweenBase ListenToComplete(Action callback)
+		public RaTweenCore ListenToComplete(Action callback)
 		{
 			if(CanBeModified())
 			{
@@ -110,7 +104,7 @@ namespace RaTweening
 			return this;
 		}
 
-		public RaTweenBase ListenToKill(Action callback)
+		public RaTweenCore ListenToKill(Action callback)
 		{
 			if(CanBeModified())
 			{
@@ -119,7 +113,7 @@ namespace RaTweening
 			return this;
 		}
 
-		public RaTweenBase SetDelay(float delay)
+		public RaTweenCore SetDelay(float delay)
 		{
 			if(CanBeModified())
 			{
@@ -128,32 +122,20 @@ namespace RaTweening
 			return this;
 		}
 
-		public RaTweenBase SetEasing(AnimationCurve easing)
+		public RaTweenCore Clone()
 		{
-			if(CanBeModified())
-			{
-				easing = easing ?? AnimationCurve.Linear(0f, 0f, 0f, 0f);
-
-				float duration = 0f;
-				if(easing.keys.Length > 0)
-				{
-					duration = easing.keys[easing.keys.Length - 1].time;
-				}
-				_process = new RaTweenTimeline(duration);
-				_easing = easing;
-			}
-			return this;
-		}
-
-		public RaTweenBase Clone()
-		{
-			RaTweenBase tween = CloneSelf();
+			RaTweenCore tween = CloneSelf();
 			return tween;
 		}
 
 		#endregion
 
 		#region Internal Methods
+
+		internal void SetDefaultValuesInternal()
+		{
+			SetDefaultValues();
+		}
 
 		internal void SetupInternal()
 		{
@@ -214,6 +196,17 @@ namespace RaTweening
 
 		#region Protected Methods
 
+		protected abstract void SetDefaultValues();
+
+		protected RaTweenCore SetDuration(float duration)
+		{
+			if(CanBeModified())
+			{
+				_process.SetDuration(duration);
+			}
+			return this;
+		}
+
 		protected bool CanBeModified()
 		{
 			switch(TweenState)
@@ -246,18 +239,10 @@ namespace RaTweening
 
 		}
 
-		protected abstract RaTweenBase CloneSelf();
+		protected abstract RaTweenCore CloneSelf();
 		protected abstract void Evaluate(float normalizedValue);
 		protected abstract void Dispose();
-
-		#endregion
-
-		#region Private Methods
-
-		private void PerformEvaluation()
-		{
-			Evaluate(_easing.Evaluate(_process.Time));
-		}
+		protected abstract void PerformEvaluation();
 
 		#endregion
 

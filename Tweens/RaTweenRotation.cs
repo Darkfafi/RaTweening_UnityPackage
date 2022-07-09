@@ -4,7 +4,7 @@ using UnityEngine;
 namespace RaTweening
 {
 	[Serializable]
-	public class RaTweenRotation : RaTweenBase
+	public class RaTweenRotation : RaTween
 	{
 		#region Editor Variables
 
@@ -61,7 +61,7 @@ namespace RaTweening
 			}
 		}
 
-		protected override RaTweenBase CloneSelf()
+		protected override RaTweenCore CloneSelf()
 		{
 			RaTweenRotation tween = new RaTweenRotation(_target, _startRot, _endRot, Easing, Delay);
 			tween._dynamicStartRotation = _dynamicStartRotation;
@@ -83,4 +83,37 @@ namespace RaTweening
 
 		#endregion
 	}
+
+
+	#region Extensions
+
+	public static class RaTweenRotationExtensions
+	{
+		public static RaTweenCore TweenRotateX(this Transform self, float rotX, AnimationCurve easing, float delay = 0f)
+		{
+			return new RaTweenRotation(self, Vector3.right * rotX, easing, delay).Play();
+		}
+
+		public static RaTweenCore TweenRotateY(this Transform self, float rotY, AnimationCurve easing, float delay = 0f)
+		{
+			return new RaTweenRotation(self, Vector3.up * rotY, easing, delay).Play();
+		}
+
+		public static RaTweenCore TweenRotateZ(this Transform self, float rotZ, AnimationCurve easing, float delay = 0f)
+		{
+			return new RaTweenRotation(self, Vector3.forward * rotZ, easing, delay).Play();
+		}
+
+		public static RaTweenCore TweenRotate(this Transform self, Vector3 rot, AnimationCurve easing, float delay = 0f)
+		{
+			return new RaTweenRotation(self, rot, easing, delay).Play();
+		}
+
+		public static RaTweenCore TweenRotate(this Transform self, Vector3 startRot, Vector3 endRot, AnimationCurve easing, float delay = 0f)
+		{
+			return new RaTweenRotation(self, startRot, endRot, easing, delay).Play();
+		}
+	}
+
+	#endregion
 }

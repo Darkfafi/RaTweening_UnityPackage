@@ -27,22 +27,22 @@ namespace RaTweening
 				Type[] tweenTypes = AppDomain.CurrentDomain
 					.GetAssemblies()
 					.SelectMany(x => x.GetTypes())
-					.Where(x => typeof(RaTweenBase).IsAssignableFrom(x) && !x.IsAbstract)
+					.Where(x => typeof(RaTweenCore).IsAssignableFrom(x) && !x.IsAbstract)
 					.ToArray();
 
-				_currentSearchWindow = SearchWindow.OpenWindow((index) => 
+				_currentSearchWindow = SearchWindow.OpenWindow((index) =>
 				{
 					if(index >= 0)
 					{
 						Type tweenType = tweenTypes[index];
 						if(tweenType.GetConstructor(Type.EmptyTypes) != null)
 						{
-							RaTweenBase value = Activator.CreateInstance(tweenType) as RaTweenBase;
+							RaTweenCore value = Activator.CreateInstance(tweenType) as RaTweenCore;
 							if(_tweenProperty != null)
 							{
 								if(value != null)
 								{
-									value.SetEasing(AnimationCurve.Linear(0f, 0f, 1f, 1f));
+									value.SetDefaultValuesInternal();
 								}
 
 								_tweenProperty.SetValue(value);

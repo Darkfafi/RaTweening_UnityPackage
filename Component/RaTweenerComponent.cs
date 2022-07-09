@@ -9,7 +9,7 @@ namespace RaTweening
 		#region Editor Variables
 
 		[SerializeReference]
-		private RaTweenBase _raTween = null;
+		private RaTweenCore _raTween = null;
 
 		[SerializeField]
 		private UnityEvent _onSetup = null;
@@ -27,7 +27,7 @@ namespace RaTweening
 
 		#region Variables
 
-		private RaTweenBase _tween = null;
+		private RaTweenCore _tween = null;
 
 		#endregion
 
