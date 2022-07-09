@@ -1,5 +1,6 @@
 ﻿using System.Collections;
 using UnityEngine;
+using UnityEngine.Events;
 
 namespace RaTweening
 {
@@ -9,6 +10,18 @@ namespace RaTweening
 
 		[SerializeReference]
 		private RaTweenBase _raTween = null;
+
+		[SerializeField]
+		private UnityEvent _onSetup = null;
+
+		[SerializeField]
+		private UnityEvent _onStart = null;
+
+		[SerializeField]
+		private UnityEvent _onComplete = null;
+
+		[SerializeField]
+		private UnityEvent _onEnd = null;
 
 		#endregion
 
@@ -28,7 +41,13 @@ namespace RaTweening
 				_tween = null;
 			}
 
-			_tween = _raTween.Clone().Play();
+			_tween = _raTween
+				.Clone()
+				.ListenToSetup(()=> _onSetup?.Invoke())
+				.ListenToStart(() => _onStart?.Invoke())
+				.ListenToComplete(()=> _onComplete?.Invoke())
+				.ListenToKill(()=> _onEnd?.Invoke())
+				.Play();
 		}
 
 		protected void OnDisable()

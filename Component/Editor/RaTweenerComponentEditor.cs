@@ -12,12 +12,17 @@ namespace RaTweening
 	public class RaTweenerComponentEditor : Editor
 	{
 		private SearchWindow _currentSearchWindow = null;
+		private SerializedProperty _tweenProperty;
+
+		protected void OnEnable()
+		{
+			_tweenProperty = serializedObject.FindProperty("_raTween");
+		}
 
 		public override void OnInspectorGUI()
 		{
-			SerializedProperty tweenProp = serializedObject.FindProperty("_raTween");
-
-			if(GUILayout.Button("Select Tweener"))
+			string name = GetTweenName();
+			if(GUILayout.Button(string.IsNullOrEmpty(name) ? "Select Tweener" : name))
 			{
 				Type[] tweenTypes = AppDomain.CurrentDomain
 					.GetAssemblies()
@@ -32,8 +37,17 @@ namespace RaTweening
 						Type tweenType = tweenTypes[index];
 						if(tweenType.GetConstructor(Type.EmptyTypes) != null)
 						{
-							object value = Activator.CreateInstance(tweenType);
-							tweenProp.SetValue(value);
+							RaTweenBase value = Activator.CreateInstance(tweenType) as RaTweenBase;
+							if(_tweenProperty != null)
+							{
+								if(value != null)
+								{
+									value.SetEasing(AnimationCurve.Linear(0f, 0f, 1f, 1f));
+								}
+
+								_tweenProperty.SetValue(value);
+								serializedObject.ApplyModifiedProperties();
+							}
 						}
 						else
 						{
@@ -44,11 +58,15 @@ namespace RaTweening
 					_currentSearchWindow = null;
 				}, tweenTypes);
 			}
-			serializedObject.Update();
 
-			if(tweenProp != null)
+			base.OnInspectorGUI();
+		}
+
+		private string GetTweenName()
+		{
+			if(_tweenProperty != null)
 			{
-				string name = tweenProp.type;
+				string name = _tweenProperty.type;
 				if(!string.IsNullOrEmpty(name))
 				{
 					name = name.Replace("managedReference", "");
@@ -58,11 +76,11 @@ namespace RaTweening
 						name = name.Remove(0, 1);
 						name = name.Remove(name.Length - 1, 1);
 					}
+					return name;
 				}
-
-				EditorGUILayout.PropertyField(tweenProp, new GUIContent(name), true);
-				serializedObject.ApplyModifiedProperties();
 			}
+
+			return string.Empty;
 		}
 	}
 }
