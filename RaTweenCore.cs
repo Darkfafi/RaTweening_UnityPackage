@@ -3,6 +3,7 @@ using RaTweening.Core;
 
 namespace RaTweening
 {
+
 	public abstract class RaTweenCore
 	{
 		#region Events
@@ -128,6 +129,18 @@ namespace RaTweening
 			return tween;
 		}
 
+		public bool CanBeModified()
+		{
+			switch(TweenState)
+			{
+				case State.None:
+				case State.ToStart:
+					return true;
+				default:
+					return false;
+			}
+		}
+
 		#endregion
 
 		#region Internal Methods
@@ -170,13 +183,18 @@ namespace RaTweening
 		{
 			OnKill();
 			_onKillEvent?.Invoke();
-			
-			Dispose();
+
+			DisposeInternal();
 
 			_onKillEvent = null;
 			_onCompletedEvent = null;
 			_onStartEvent = null;
 			_onSetupEvent = null;
+		}
+
+		internal void DisposeInternal()
+		{
+			Dispose();
 		}
 
 		internal void CompleteInternal()
@@ -205,18 +223,6 @@ namespace RaTweening
 				_process.SetDuration(duration);
 			}
 			return this;
-		}
-
-		protected bool CanBeModified()
-		{
-			switch(TweenState)
-			{
-				case State.None:
-				case State.ToStart:
-					return true;
-				default:
-					return false;
-			}
 		}
 
 		protected virtual void OnSetup()
@@ -257,6 +263,7 @@ namespace RaTweening
 			InProgress,
 			Completed,
 			Dead,
+			Data,
 		}
 
 		#endregion
