@@ -1,5 +1,5 @@
-﻿using System;
-using RaTweening.Core;
+﻿using RaTweening.Core;
+using System;
 
 namespace RaTweening
 {
@@ -11,7 +11,7 @@ namespace RaTweening
 		private Action _onSetupEvent;
 		private Action _onStartEvent;
 		private Action _onCompletedEvent;
-		private Action _onKillEvent; 
+		private Action _onKillEvent;
 
 		#endregion
 
@@ -58,7 +58,7 @@ namespace RaTweening
 		{
 			_delay = new RaTweenTimeline(0f);
 			_process = new RaTweenTimeline(0f);
-			
+
 			TweenState = State.None;
 
 			SetDuration(duration);
@@ -161,7 +161,7 @@ namespace RaTweening
 		internal void StartInternal()
 		{
 			_process.Reset();
-			
+
 			OnStart();
 			_onStartEvent?.Invoke();
 
@@ -227,7 +227,7 @@ namespace RaTweening
 
 		protected virtual void OnSetup()
 		{
-		
+
 		}
 
 		protected virtual void OnStart()

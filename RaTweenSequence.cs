@@ -4,11 +4,17 @@ using UnityEngine;
 
 namespace RaTweening
 {
-	public class RaTweenSequence : RaTweenCore
+	public sealed class RaTweenSequence : RaTweenCore
 	{
+		#region Editor Variables
+
+		[SerializeField, HideInInspector]
+		private List<RaTweenCore> _tweens = new List<RaTweenCore>();
+
+		#endregion
+
 		#region Variables
 
-		private List<RaTweenCore> _tweens = new List<RaTweenCore>();
 		private RaTweeningProcessor _processor = new RaTweeningProcessor();
 		private int _index;
 		private float _time;
@@ -54,9 +60,22 @@ namespace RaTweening
 				{
 					RaTweeningCore.Instance.UnregisterTween(tween);
 				}
-				tween.SetStateInternal(State.Dead);
+				tween.SetStateInternal(State.Data);
 				_tweens.Add(tween);
 				SetDuration(Duration + tween.TotalDuration);
+			}
+			return this;
+		}
+
+		public RaTweenSequence RemoveTween(RaTweenCore tween)
+		{
+			if(CanBeModified() && tween.CanBeModified())
+			{
+				if(_tweens.Remove(tween))
+				{
+					tween.SetStateInternal(State.Dead);
+					SetDuration(Duration - tween.TotalDuration);
+				}
 			}
 			return this;
 		}

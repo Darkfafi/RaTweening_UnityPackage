@@ -1,17 +1,16 @@
-﻿using UnityEngine;
-using Supyrb;
+﻿using Supyrb;
 using System;
-
-using UnityEditor;
-using System.Reflection;
 using System.Linq;
+using UnityEditor;
+using UnityEditor.UIElements;
+using UnityEngine;
+using UnityEngine.UIElements;
 
 namespace RaTweening
 {
 	[CustomEditor(typeof(RaTweenerComponent))]
 	public class RaTweenerComponentEditor : Editor
 	{
-		private SearchWindow _currentSearchWindow = null;
 		private SerializedProperty _tweenProperty;
 
 		protected void OnEnable()
@@ -19,47 +18,93 @@ namespace RaTweening
 			_tweenProperty = serializedObject.FindProperty("_raTween");
 		}
 
-		public override void OnInspectorGUI()
+		public static SearchWindow CreateTweenSearchWindow(Action<RaTweenCore> onSelectTween)
 		{
-			string name = GetTweenName();
-			if(GUILayout.Button(string.IsNullOrEmpty(name) ? "Select Tweener" : name))
+			Type[] tweenTypes = GetAllTweenTypes();
+
+			SearchWindow window = null;
+
+			window = SearchWindow.OpenWindow((index) =>
 			{
-				Type[] tweenTypes = AppDomain.CurrentDomain
+				if(index >= 0)
+				{
+					Type tweenType = tweenTypes[index];
+					if(tweenType.GetConstructor(Type.EmptyTypes) != null)
+					{
+						RaTweenCore value = Activator.CreateInstance(tweenType) as RaTweenCore;
+						onSelectTween?.Invoke(value);
+					}
+					else
+					{
+						EditorUtility.DisplayDialog("Error", "No Default Constructor for Tweener " + tweenType.ToString() + "! Please add a default constructor", "Ok");
+					}
+					window.Close();
+				}
+				window = null;
+			}, tweenTypes);
+			return window;
+		}
+
+		public static Type[] GetAllTweenTypes()
+		{
+			return AppDomain.CurrentDomain
 					.GetAssemblies()
 					.SelectMany(x => x.GetTypes())
 					.Where(x => typeof(RaTweenCore).IsAssignableFrom(x) && !x.IsAbstract)
 					.ToArray();
+		}
 
-				_currentSearchWindow = SearchWindow.OpenWindow((index) =>
+		public override VisualElement CreateInspectorGUI()
+		{
+			// Create property container element.
+			var container = new VisualElement();
+
+			Button button = null;
+			PropertyField tweenerField = new PropertyField();
+
+			button = new Button(() => { OnClickButton(); });
+
+			Refresh();
+
+			// Add fields to the container.
+			container.Add(button);
+			container.Add(tweenerField);
+
+			return container;
+
+			void OnClickButton()
+			{
+				CreateTweenSearchWindow((tween) =>
 				{
-					if(index >= 0)
+					if(_tweenProperty != null)
 					{
-						Type tweenType = tweenTypes[index];
-						if(tweenType.GetConstructor(Type.EmptyTypes) != null)
+						if(tween != null)
 						{
-							RaTweenCore value = Activator.CreateInstance(tweenType) as RaTweenCore;
-							if(_tweenProperty != null)
-							{
-								if(value != null)
-								{
-									value.SetDefaultValuesInternal();
-								}
+							tween.SetDefaultValuesInternal();
+						}
 
-								_tweenProperty.SetValue(value);
-								serializedObject.ApplyModifiedProperties();
-							}
-						}
-						else
-						{
-							EditorUtility.DisplayDialog("Error", "No Default Constructor for Tweener " + tweenType.ToString() + "! Please add a default constructor", "Ok");
-						}
-						_currentSearchWindow.Close();
+						_tweenProperty.SetValue(tween);
+						serializedObject.ApplyModifiedProperties();
 					}
-					_currentSearchWindow = null;
-				}, tweenTypes);
+
+					Refresh();
+				});
 			}
 
-			base.OnInspectorGUI();
+			void Refresh()
+			{
+				serializedObject.Update();
+				
+				tweenerField.BindProperty(_tweenProperty);
+
+				name = GetTweenName();
+				button.text = string.IsNullOrEmpty(name) ? "Select Tweener" : name;
+			}
+		}
+
+		public override void OnInspectorGUI()
+		{
+			DrawDefaultInspector();
 		}
 
 		private string GetTweenName()
