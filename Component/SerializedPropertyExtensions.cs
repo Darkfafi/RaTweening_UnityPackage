@@ -11,7 +11,7 @@ using System.Linq;
 // </author>
 // --------------------------------------------------------------------------------------------------------------------
 
-namespace Supyrb
+namespace RaTweening.Supyrb
 {
 	using System;
 	using System.Reflection;

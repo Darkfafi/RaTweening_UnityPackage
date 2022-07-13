@@ -2,6 +2,7 @@
 
 namespace RaTweening
 {
+	[RaTweenerElement(typeof(RaTweenerSerializableElement))]
 	public abstract class RaTween : RaTweenCore
 	{
 		#region Editor Variables

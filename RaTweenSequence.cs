@@ -8,7 +8,7 @@ namespace RaTweening
 	{
 		#region Editor Variables
 
-		[SerializeField, HideInInspector]
+		[SerializeField, SerializeReference]
 		private List<RaTweenCore> _tweens = new List<RaTweenCore>();
 
 		#endregion

@@ -1,24 +1,24 @@
-﻿using Supyrb;
+﻿using RaTweening.Supyrb;
 using System;
 using System.Linq;
 using UnityEditor;
-using UnityEditor.UIElements;
 using UnityEngine;
-using UnityEngine.UIElements;
 
 namespace RaTweening
 {
 	[CustomEditor(typeof(RaTweenerComponent))]
 	public class RaTweenerComponentEditor : Editor
 	{
-		private SerializedProperty _tweenProperty;
+		private SerializedProperty _tweenElementProperty;
+		private Editor _editor;
+		private string _name;
 
 		protected void OnEnable()
 		{
-			_tweenProperty = serializedObject.FindProperty("_raTween");
+			_tweenElementProperty = serializedObject.FindProperty("_tweenElement");
 		}
 
-		public static SearchWindow CreateTweenSearchWindow(Action<RaTweenCore> onSelectTween)
+		public static SearchWindow CreateTweenSearchWindow(Action<Type> onSelectTween)
 		{
 			Type[] tweenTypes = GetAllTweenTypes();
 
@@ -29,15 +29,7 @@ namespace RaTweening
 				if(index >= 0)
 				{
 					Type tweenType = tweenTypes[index];
-					if(tweenType.GetConstructor(Type.EmptyTypes) != null)
-					{
-						RaTweenCore value = Activator.CreateInstance(tweenType) as RaTweenCore;
-						onSelectTween?.Invoke(value);
-					}
-					else
-					{
-						EditorUtility.DisplayDialog("Error", "No Default Constructor for Tweener " + tweenType.ToString() + "! Please add a default constructor", "Ok");
-					}
+					onSelectTween?.Invoke(tweenType);
 					window.Close();
 				}
 				window = null;
@@ -54,78 +46,141 @@ namespace RaTweening
 					.ToArray();
 		}
 
-		public override VisualElement CreateInspectorGUI()
-		{
-			// Create property container element.
-			var container = new VisualElement();
-
-			Button button = null;
-			PropertyField tweenerField = new PropertyField();
-
-			button = new Button(() => { OnClickButton(); });
-
-			Refresh();
-
-			// Add fields to the container.
-			container.Add(button);
-			container.Add(tweenerField);
-
-			return container;
-
-			void OnClickButton()
-			{
-				CreateTweenSearchWindow((tween) =>
-				{
-					if(_tweenProperty != null)
-					{
-						if(tween != null)
-						{
-							tween.SetDefaultValuesInternal();
-						}
-
-						_tweenProperty.SetValue(tween);
-						serializedObject.ApplyModifiedProperties();
-					}
-
-					Refresh();
-				});
-			}
-
-			void Refresh()
-			{
-				serializedObject.Update();
-				
-				tweenerField.BindProperty(_tweenProperty);
-
-				name = GetTweenName();
-				button.text = string.IsNullOrEmpty(name) ? "Select Tweener" : name;
-			}
-		}
-
 		public override void OnInspectorGUI()
 		{
-			DrawDefaultInspector();
-		}
-
-		private string GetTweenName()
-		{
-			if(_tweenProperty != null)
+			// Auto Fill Tweener
+			if(_tweenElementProperty != null && _tweenElementProperty.objectReferenceValue == null)
 			{
-				string name = _tweenProperty.type;
-				if(!string.IsNullOrEmpty(name))
+				var tweens = GetAllTweenTypes();
+				if(tweens.Length > 0)
 				{
-					name = name.Replace("managedReference", "");
-
-					if(name.Length > 2)
+					var tween = tweens.FirstOrDefault(x => TryGetRaTweenerElementAttribute(x, out _, out _));
+					if(tween != null)
 					{
-						name = name.Remove(0, 1);
-						name = name.Remove(name.Length - 1, 1);
+						SelectTween(tween);
 					}
-					return name;
 				}
 			}
 
-			return string.Empty;
+			// Select Tweener Button
+			if(GUILayout.Button(string.IsNullOrEmpty(_name) ? "Select Tweener" : _name))
+			{
+				CreateTweenSearchWindow((tweenType) =>
+				{
+					SelectTween(tweenType);
+				});
+			}
+
+			// Draw Editor
+			if(_tweenElementProperty != null)
+			{
+				if(_tweenElementProperty.objectReferenceValue != null)
+				{
+					if(_editor == null)
+					{
+						_editor = CreateEditor(_tweenElementProperty.objectReferenceValue);
+
+						RaTweenerElementBase element = _tweenElementProperty.GetValue<RaTweenerElementBase>();
+
+						if(element)
+						{
+							_name = element.GetElementName();
+						}
+					}
+				}
+				else
+				{
+					_editor = null;
+				}
+
+				if(_editor != null)
+				{
+					_editor.OnInspectorGUI();
+					_editor.serializedObject.ApplyModifiedProperties();
+
+					DrawDefaultInspector();
+				}
+			}
+		}
+
+		private void SelectTween(Type tweenType)
+		{
+			if(_tweenElementProperty != null)
+			{
+				if(TryGetRaTweenerElementAttribute(tweenType, out RaTweenerElementAttribute attribute, out string error))
+				{
+					if(serializedObject.targetObject is RaTweenerComponent parent)
+					{
+						try
+						{
+							RaTweenerElementBase value = parent.gameObject.AddComponent(attribute.ElementSOType) as RaTweenerElementBase;
+							value.hideFlags = HideFlags.HideInInspector;
+
+							RaTweenerElementBase preValue = _tweenElementProperty.GetValue<RaTweenerElementBase>();
+
+							if(preValue != null)
+							{
+								if(Application.isPlaying)
+								{
+									Destroy(preValue);
+								}
+								else
+								{
+									DestroyImmediate(preValue);
+								}
+							}
+
+							value.Init(tweenType);
+							_tweenElementProperty.SetValue(value);
+
+							EditorUtility.SetDirty(parent);
+						}
+						catch(Exception e)
+						{
+							Debug.LogError(e.Message);
+						}
+						serializedObject.ApplyModifiedProperties();
+					}
+				}
+				else
+				{
+					EditorUtility.DisplayDialog("Error", error, "Ok");
+				}
+			}
+			serializedObject.Update();
+			_editor = null;
+		}
+
+		private bool TryGetRaTweenerElementAttribute(Type tweenType, out RaTweenerElementAttribute attribute, out string error)
+		{
+			if(tweenType.GetCustomAttributes(typeof(RaTweenerElementAttribute), true).FirstOrDefault()
+				is RaTweenerElementAttribute extractedAttribute)
+			{
+				if(typeof(RaTweenerElementBase).IsAssignableFrom(extractedAttribute.ElementSOType))
+				{
+					if(!extractedAttribute.ElementSOType.IsAbstract)
+					{
+						attribute = extractedAttribute;
+						error = string.Empty;
+						return true;
+					}
+					else
+					{
+						error = $"Type {extractedAttribute.ElementSOType.Name} defined within {nameof(RaTweenerElementAttribute)}, found above {tweenType.Name}, can't be an Abstract";
+					}
+				}
+				else
+				{
+					error = $"Type {extractedAttribute.ElementSOType.Name} defined within {nameof(RaTweenerElementAttribute)}, found above {tweenType.Name}, does not derive from {nameof(RaTweenerElementBase)}";
+				}
+			}
+			else
+			{
+				error = $"No {nameof(RaTweenerElementAttribute)} found above {tweenType.Name}";
+			}
+
+			attribute = null;
+			return false;
 		}
 	}
 }

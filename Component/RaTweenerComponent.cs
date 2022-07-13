@@ -1,16 +1,21 @@
-﻿using System.Collections;
-using UnityEngine;
+﻿using UnityEngine;
 using UnityEngine.Events;
 
 namespace RaTweening
 {
+	[ExecuteAlways]
 	public class RaTweenerComponent : MonoBehaviour
 	{
 		#region Editor Variables
 
-		[SerializeReference]
-		private RaTweenCore _raTween = null;
+		[SerializeReference, HideInInspector]
+		private RaTweenerElementBase _tweenElement = null;
 
+		[Header("Generic Settings")]
+		[SerializeField]
+		private float _delay = 0f;
+
+		[Header("Callbacks")]
 		[SerializeField]
 		private UnityEvent _onSetup = null;
 
@@ -35,27 +40,71 @@ namespace RaTweening
 
 		protected void OnEnable()
 		{
-			if(_tween != null)
+			if(Application.isPlaying)
 			{
-				_tween.Kill();
-				_tween = null;
-			}
+				if(_tween != null)
+				{
+					_tween.Kill();
+					_tween = null;
+				}
 
-			_tween = _raTween
-				.Clone()
-				.ListenToSetup(()=> _onSetup?.Invoke())
-				.ListenToStart(() => _onStart?.Invoke())
-				.ListenToComplete(()=> _onComplete?.Invoke())
-				.ListenToKill(()=> _onEnd?.Invoke())
-				.Play();
+				if(_tweenElement != null)
+				{
+					_tween = _tweenElement
+						.CreateTween()
+						.ListenToSetup(() => _onSetup?.Invoke())
+						.ListenToStart(() => _onStart?.Invoke())
+						.ListenToComplete(() => _onComplete?.Invoke())
+						.ListenToKill(() => _onEnd?.Invoke())
+						.SetDelay(_delay)
+						.Play();
+				}
+			}
 		}
 
 		protected void OnDisable()
 		{
-			if(_tween != null)
+			if(Application.isPlaying)
 			{
-				_tween.Kill();
-				_tween = null;
+				if(_tween != null)
+				{
+					_tween.Kill();
+					_tween = null;
+				}
+			}
+		}
+
+		protected void OnDestroy()
+		{
+			if(_tweenElement)
+			{
+#if UNITY_EDITOR
+				UnityEditor.EditorApplication.delayCall += ClearElement;
+#else
+				ClearElement();
+#endif
+			}
+		}
+
+		#endregion
+
+		#region Private Methods
+
+		private void ClearElement()
+		{
+#if UNITY_EDITOR
+			UnityEditor.EditorApplication.delayCall -= ClearElement;
+#endif
+			if(_tweenElement)
+			{
+				if(Application.isPlaying)
+				{
+					Destroy(_tweenElement);
+				}
+				else
+				{
+					DestroyImmediate(_tweenElement);
+				}
 			}
 		}
 

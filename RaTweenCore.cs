@@ -3,7 +3,6 @@ using System;
 
 namespace RaTweening
 {
-
 	public abstract class RaTweenCore
 	{
 		#region Events
