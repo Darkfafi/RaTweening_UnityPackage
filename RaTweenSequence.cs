@@ -4,6 +4,7 @@ using UnityEngine;
 
 namespace RaTweening
 {
+	[RaTweenerElement(typeof(RaTweenerSequenceElement))]
 	public sealed class RaTweenSequence : RaTweenCore
 	{
 		#region Editor Variables
