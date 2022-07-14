@@ -79,32 +79,17 @@ namespace RaTweening
 			if(_tweenElement)
 			{
 #if UNITY_EDITOR
-				UnityEditor.EditorApplication.delayCall += ClearElement;
+				if(RaTweenerComponentEditor.TryRemoveTween(_tweenElement))
+				{
+					_tweenElement = null;
+				}
 #else
-				ClearElement();
-#endif
-			}
-		}
-
-		#endregion
-
-		#region Private Methods
-
-		private void ClearElement()
-		{
-#if UNITY_EDITOR
-			UnityEditor.EditorApplication.delayCall -= ClearElement;
-#endif
-			if(_tweenElement)
-			{
 				if(Application.isPlaying)
 				{
 					Destroy(_tweenElement);
+					_tweenElement = null;
 				}
-				else
-				{
-					DestroyImmediate(_tweenElement);
-				}
+#endif
 			}
 		}
 
