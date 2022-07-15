@@ -66,7 +66,7 @@ namespace RaTweening
 
 						if(element)
 						{
-							_name = element.GetElementName();
+							_name = element.GetName();
 						}
 					}
 				}
@@ -157,7 +157,7 @@ namespace RaTweening
 					{
 						RaTweenerElementBase value = parent.gameObject.AddComponent(attribute.ElementSOType) as RaTweenerElementBase;
 						value.hideFlags = HideFlags.HideInInspector;
-						value.Init(tweenType);
+						value.Initialize(tweenType);
 						elementAdded = value;
 						EditorUtility.SetDirty(parent);
 					}

@@ -34,7 +34,7 @@ namespace RaTweening
 				if(_tweenElement != null)
 				{
 					_tween = _tweenElement
-						.CreateTweenCore()
+						.CreateTween()
 						.Play();
 				}
 			}

@@ -47,14 +47,24 @@ namespace RaTweening
 
 		#region Protected Methods
 
-		protected override RaTweenCore CreateTween()
+		protected override void Init(Type tweenType)
+		{
+			_sequenceElements = new List<RaTweenerElementBase>();
+		}
+
+		protected override RaTweenCore CreateTweenCore()
 		{
 			RaTweenCore[] sequence = new RaTweenCore[_sequenceElements.Count];
 			for(int i = 0; i < sequence.Length; i++)
 			{
-				sequence[i] = _sequenceElements[i].CreateTweenCore();
+				sequence[i] = _sequenceElements[i].CreateTween();
 			}
 			return new RaTweenSequence(sequence);
+		}
+
+		protected override string GetElementName()
+		{
+			return nameof(RaTweenSequence);
 		}
 
 		#endregion
@@ -74,16 +84,6 @@ namespace RaTweening
 		internal bool UnregisterTweenElement(RaTweenerElementBase element)
 		{
 			return _sequenceElements.Remove(element);
-		}
-
-		internal override void Init(Type tweenType)
-		{
-			_sequenceElements = new List<RaTweenerElementBase>();
-		}
-
-		internal override string GetElementName()
-		{
-			return nameof(RaTweenSequence);
 		}
 
 		#endregion

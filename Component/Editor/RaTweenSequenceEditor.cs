@@ -49,7 +49,7 @@ namespace RaTweening
 			{
 				EditorGUILayout.BeginHorizontal();
 				{
-					EditorGUILayout.LabelField(self.GetElementName(), EditorStyles.boldLabel);
+					EditorGUILayout.LabelField(self.GetName(), EditorStyles.boldLabel);
 					if(_editMode)
 					{
 						if(IconButton(_isGlobalExpanded ? "scenevis_visible_hover@2x" : "scenevis_visible@2x", 20f))
@@ -137,7 +137,17 @@ namespace RaTweening
 			{
 				if(item is RaTweenerElementBase element)
 				{
-					EditorGUILayout.TextField(index + ": " + element.GetElementName());
+					string oldName = element.GetName();
+					EditorGUILayout.BeginHorizontal();
+					{
+						EditorGUILayout.LabelField(index + ":", GUILayout.Width(25));
+						string newName = EditorGUILayout.TextField(oldName);
+						if(oldName != newName)
+						{
+							element.SetName(newName);
+						}
+					}
+					EditorGUILayout.EndHorizontal();
 					if(IconButton(serializedProp.isExpanded ? "scenevis_visible_hover@2x" : "scenevis_visible@2x", 20f))
 					{
 						serializedProp.isExpanded = !serializedProp.isExpanded;
@@ -187,7 +197,14 @@ namespace RaTweening
 
 			int currentWidth = 0;
 
-			EditorGUI.TextField(new Rect(rect.x, rect.y, currentWidth += 270, EditorGUIUtility.singleLineHeight), index + ": " + sequenceElement.GetElementName());
+			string oldName = sequenceElement.GetName();
+			EditorGUI.LabelField(new Rect(rect.x, rect.y, currentWidth += 25, EditorGUIUtility.singleLineHeight), index + ":");
+			string newName = EditorGUI.TextField(new Rect(currentWidth + rect.x, rect.y, 275 - currentWidth, EditorGUIUtility.singleLineHeight), oldName);
+
+			if(oldName != newName)
+			{
+				sequenceElement.SetName(newName);
+			}
 
 			int bWidth = 20;
 			if(IconButton(new Rect(rect.x + rect.width - bWidth, rect.y, bWidth, EditorGUIUtility.singleLineHeight), "CollabDeleted Icon"))

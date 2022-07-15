@@ -23,13 +23,16 @@ namespace RaTweening
 		[SerializeField, HideInInspector]
 		private UnityEvent _onEnd = null;
 
+		[SerializeField, HideInInspector]
+		private string _overrideName = null;
+
 		#endregion
 
 		#region Public Methods
 
-		public RaTweenCore CreateTweenCore()
+		public RaTweenCore CreateTween()
 		{
-			return CreateTween()
+			return CreateTweenCore()
 				.ListenToSetup(() => _onSetup?.Invoke())
 				.ListenToStart(() => _onStart?.Invoke())
 				.ListenToComplete(() => _onComplete?.Invoke())
@@ -41,14 +44,28 @@ namespace RaTweening
 
 		#region Internal Methods
 
-		internal abstract string GetElementName();
-		internal abstract void Init(Type tweenType);
+		internal void Initialize(Type tweenType)
+		{
+			Init(tweenType);
+		}
+
+		internal string GetName()
+		{
+			return string.IsNullOrEmpty(_overrideName) ? GetElementName() : _overrideName;
+		}
+
+		internal void SetName(string name)
+		{
+			_overrideName = name;
+		}
 
 		#endregion
 
 		#region Protected Methods
 
-		protected abstract RaTweenCore CreateTween();
+		protected abstract void Init(Type tweenType);
+		protected abstract string GetElementName();
+		protected abstract RaTweenCore CreateTweenCore();
 
 		#endregion
 	}
