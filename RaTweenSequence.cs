@@ -18,6 +18,7 @@ namespace RaTweening
 
 		private RaTweeningProcessor _processor = new RaTweeningProcessor();
 		private int _index;
+		private RaTweenCore _currentTween;
 		private float _time;
 
 		#endregion
@@ -88,6 +89,7 @@ namespace RaTweening
 		protected override void OnSetup()
 		{
 			base.OnSetup();
+			_currentTween = null;
 			_index = -1;
 			_time = 0f;
 		}
@@ -108,18 +110,18 @@ namespace RaTweening
 		protected override void Dispose()
 		{
 			_processor.Dispose();
+			_currentTween = null;
 			_index = -1;
 		}
 
 		protected override void Evaluate(float normalizedValue)
 		{
-			int index = Mathf.FloorToInt(_tweens.Count * normalizedValue);
-			if(_index != index)
+			if(_currentTween == null || _currentTween.IsCompleted)
 			{
-				_index = index;
-				if(index < _tweens.Count)
+				_index++;
+				if(_index < _tweens.Count)
 				{
-					_processor.RegisterTween(_tweens[_index].Clone());
+					_processor.RegisterTween(_currentTween = _tweens[_index].Clone());
 				}
 			}
 
@@ -132,7 +134,10 @@ namespace RaTweening
 
 		protected override void PerformEvaluation()
 		{
-			Evaluate(Progress);
+			if(_tweens.Count > 0)
+			{
+				Evaluate(Progress);
+			}
 		}
 
 		protected override void SetDefaultValues()
