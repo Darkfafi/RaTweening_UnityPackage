@@ -45,14 +45,14 @@ namespace RaTweening
 
 		#endregion
 
-		#region Public Methods
+		#region Protected Methods
 
-		public override RaTweenCore CreateTween()
+		protected override RaTweenCore CreateTween()
 		{
 			RaTweenCore[] sequence = new RaTweenCore[_sequenceElements.Count];
 			for(int i = 0; i < sequence.Length; i++)
 			{
-				sequence[i] = _sequenceElements[i].CreateTween();
+				sequence[i] = _sequenceElements[i].CreateTweenCore();
 			}
 			return new RaTweenSequence(sequence);
 		}

@@ -13,9 +13,9 @@ namespace RaTweening
 
 		#endregion
 
-		#region Public Methods
+		#region Protected Methods
 
-		public override RaTweenCore CreateTween()
+		protected override RaTweenCore CreateTween()
 		{
 			return _tween.Clone();
 		}

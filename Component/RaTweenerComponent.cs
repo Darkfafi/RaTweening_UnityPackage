@@ -11,23 +11,6 @@ namespace RaTweening
 		[SerializeReference, HideInInspector]
 		private RaTweenerElementBase _tweenElement = null;
 
-		[Header("Generic Settings")]
-		[SerializeField]
-		private float _delay = 0f;
-
-		[Header("Callbacks")]
-		[SerializeField]
-		private UnityEvent _onSetup = null;
-
-		[SerializeField]
-		private UnityEvent _onStart = null;
-
-		[SerializeField]
-		private UnityEvent _onComplete = null;
-
-		[SerializeField]
-		private UnityEvent _onEnd = null;
-
 		#endregion
 
 		#region Variables
@@ -51,12 +34,7 @@ namespace RaTweening
 				if(_tweenElement != null)
 				{
 					_tween = _tweenElement
-						.CreateTween()
-						.ListenToSetup(() => _onSetup?.Invoke())
-						.ListenToStart(() => _onStart?.Invoke())
-						.ListenToComplete(() => _onComplete?.Invoke())
-						.ListenToKill(() => _onEnd?.Invoke())
-						.SetDelay(_delay)
+						.CreateTweenCore()
 						.Play();
 				}
 			}

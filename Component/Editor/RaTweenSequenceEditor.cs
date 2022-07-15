@@ -8,11 +8,14 @@ using UnityEngine.UIElements;
 
 namespace RaTweening
 {
+
+
 	[CustomEditor(typeof(RaTweenerSequenceElement))]
 	public class RaTweenSequenceEditor : Editor
 	{
 		#region Variables
 
+		private RaTweenElementEditorDrawer _drawer;
 		private ReorderableList _orderableList;
 		private SerializedProperty _tweensProperty;
 		private bool _editMode = true;
@@ -25,6 +28,7 @@ namespace RaTweening
 		{
 			try
 			{
+				_drawer = new RaTweenElementEditorDrawer(serializedObject);
 				_tweensProperty = serializedObject.FindProperty("_sequenceElements");
 				_orderableList = new ReorderableList(serializedObject, _tweensProperty, true, true, false, false);
 				_orderableList.drawElementCallback = OnDrawNestedItem;
@@ -37,7 +41,7 @@ namespace RaTweening
 
 		public override void OnInspectorGUI()
 		{
-			DrawDefaultInspector();
+			_drawer.Draw();
 
 			RaTweenerSequenceElement self = serializedObject.targetObject as RaTweenerSequenceElement;
 

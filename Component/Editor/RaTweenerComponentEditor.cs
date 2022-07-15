@@ -28,6 +28,8 @@ namespace RaTweening
 
 		public override void OnInspectorGUI()
 		{
+			DrawDefaultInspector();
+
 			// Auto Fill Tweener
 			if(_tweenElementProperty != null && _tweenElementProperty.objectReferenceValue == null)
 			{
@@ -77,8 +79,6 @@ namespace RaTweening
 				{
 					_editor.OnInspectorGUI();
 					_editor.serializedObject.ApplyModifiedProperties();
-
-					DrawDefaultInspector();
 				}
 			}
 		}
