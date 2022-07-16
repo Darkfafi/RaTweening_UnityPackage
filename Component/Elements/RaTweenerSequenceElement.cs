@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using UnityEngine;
-
+using static RaTweening.RaTweenSequence;
 
 namespace RaTweening
 {
@@ -58,7 +58,7 @@ namespace RaTweening
 			for(int i = 0, c = entries.Length; i < c; i++)
 			{
 				var entry = _sequenceEntries[i];
-				entries[i] = new RaTweenSequence.EntryData(entry.TweenElement.CreateTween(), entry.Stagger);
+				entries[i] = RaTweenSequence.EntryData.Create(entry.TweenElement.CreateTween(), entry.Stagger, entry.StaggerType);
 			}
 			return new RaTweenSequence(entries);
 		}
@@ -77,7 +77,8 @@ namespace RaTweening
 			_sequenceEntries.Add(new EntryData()
 			{
 				TweenElement = element,
-				Stagger = 1f
+				Stagger = 1f,
+				StaggerType = StaggerType.FinalLoopExclDelay
 			});
 
 			return true;
@@ -108,8 +109,7 @@ namespace RaTweening
 			public RaTweenerElementBase TweenElement;
 			[Range(0f, 1f)]
 			public float Stagger;
-
-			public bool StaggerIncludesDelay;
+			public StaggerType StaggerType;
 		}
 
 		#endregion

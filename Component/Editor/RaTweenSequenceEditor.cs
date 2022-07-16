@@ -131,7 +131,7 @@ namespace RaTweening
 
 			var serializedElement = serializedProp.FindPropertyRelative("TweenElement");
 			var serializedStagger = serializedProp.FindPropertyRelative("Stagger");
-			//var serializedStaggerInclDelay = serializedProp.FindPropertyRelative("StaggerIncludesDelay");
+			var serializedStaggerType = serializedProp.FindPropertyRelative("StaggerType");
 
 			if(serializedElement != null && serializedElement.objectReferenceValue is RaTweenerElementBase element)
 			{
@@ -179,7 +179,7 @@ namespace RaTweening
 						{
 							EditorGUILayout.LabelField(new GUIContent("Sequence Stagger", "How much % of this tween has to be finished in order to start the next tween in the sequence"), EditorStyles.boldLabel);
 							EditorGUILayout.PropertyField(serializedStagger, new GUIContent("Stagger: "));
-							//EditorGUILayout.PropertyField(serializedStaggerInclDelay, new GUIContent("Stagger Incl Delay: "));
+							EditorGUILayout.PropertyField(serializedStaggerType, new GUIContent("StaggerType: "));
 						}
 						EditorGUILayout.EndVertical();
 						editor.serializedObject.ApplyModifiedProperties();

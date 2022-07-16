@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using RaTweening.Core;
 using UnityEngine;
+using static RaTweening.RaTweenSequence;
 
 namespace RaTweening
 {
@@ -53,13 +54,6 @@ namespace RaTweening
 
 		#region Public Methods
 
-		public static RaTweenSequence Create(RaTweenCore[] tweens)
-		{
-			RaTweenSequence sequence = new RaTweenSequence(tweens);
-			RaTweeningCore.Instance.RegisterTween(sequence);
-			return sequence;
-		}
-
 		public static RaTweenSequence Create(params EntryData[] tweens)
 		{
 			RaTweenSequence sequence = new RaTweenSequence(tweens);
@@ -67,9 +61,11 @@ namespace RaTweening
 			return sequence;
 		}
 
-		public RaTweenSequence AppendTween(RaTweenCore tween, float stagger = 1f)
+		public RaTweenSequence AppendTween(RaTweenCore tween, 
+			float stagger = 1f, 
+			StaggerType staggerType = StaggerType.FinalLoopExclDelay)
 		{
-			return AppendTween(new EntryData(tween, stagger));
+			return AppendTween(tween.ToSequenceEntry(stagger, staggerType));
 		}
 
 		public RaTweenSequence AppendTween(EntryData entry)
@@ -139,7 +135,7 @@ namespace RaTweening
 
 		protected override void Evaluate(float normalizedValue)
 		{
-			if(_headEntry == null || _headEntry.ReadyToStartNext())
+			if(_headEntry.IsEmpty || _headEntry.ReadyToStartNext())
 			{
 				_index++;
 				if(_index < _sequenceEntries.Count)
@@ -193,8 +189,22 @@ namespace RaTweening
 				}
 
 				float entryTweenDuration = entry.Tween.TotalLoopingDuration;
-				newDuration = newStartTime + entryTweenDuration;
-				newStartTime += entryTweenDuration * entry.Stagger;
+				newDuration = Mathf.Max(newStartTime + entryTweenDuration, newDuration);
+
+				switch(entry.StaggerType)
+				{
+					case StaggerType.Total:
+						newStartTime += entryTweenDuration * entry.Stagger;
+						break;
+					case StaggerType.FinalLoop:
+						newStartTime += entryTweenDuration - (entry.Tween.TotalDuration * (1f - entry.Stagger));
+						break;
+					case StaggerType.FinalLoopExclDelay:
+						newStartTime += entryTweenDuration - (entry.Tween.Duration * (1f - entry.Stagger));
+						break;
+					default:
+						throw new System.Exception($"Not Implemented {entry.StaggerType}");
+				}
 			}
 
 			SetDuration(newDuration);
@@ -202,7 +212,7 @@ namespace RaTweening
 
 		private void ClearData()
 		{
-			_headEntry = null;
+			_headEntry = default;
 			_index = -1;
 			_time = 0f;
 		}
@@ -211,22 +221,51 @@ namespace RaTweening
 
 		#region Nested
 
-		public class EntryData
+		public struct EntryData
 		{
 			public readonly RaTweenCore Tween;
-			public readonly float Stagger;
 
-			public bool IsValidForAppend => Tween != null && Tween.CanBeModified();
+			public float Stagger
+			{
+				get; private set;
+			}
 
-			public EntryData(RaTweenCore tween, float stagger = 1f)
+			public StaggerType StaggerType
+			{
+				get; private set;
+			}
+
+			public bool IsEmpty => Tween == null;
+
+			public bool IsValidForAppend => !IsEmpty && Tween.CanBeModified();
+
+			private EntryData(RaTweenCore tween, float stagger, StaggerType staggerType)
 			{
 				Tween = tween;
 				Stagger = stagger;
+				StaggerType = staggerType;
+			}
+
+			public static EntryData Create(RaTweenCore tween, float stagger = 1f, StaggerType staggerType = StaggerType.FinalLoopExclDelay)
+			{
+				return new EntryData(tween, stagger, staggerType);
+			}
+
+			public EntryData SetStaggerType(StaggerType staggerType)
+			{
+				StaggerType = staggerType;
+				return this;
+			}
+
+			public EntryData SetStagger(float stagger)
+			{
+				Stagger = Mathf.Clamp01(stagger);
+				return this;
 			}
 
 			public EntryData Clone()
 			{
-				return new EntryData(Tween.Clone(), Stagger);
+				return new EntryData(Tween.Clone(), Stagger, StaggerType);
 			}
 
 			public bool ReadyToStartNext()
@@ -235,10 +274,36 @@ namespace RaTweening
 				{
 					return true;
 				}
-				return Tween.TotalLoopingProgress >= Stagger;
+
+				switch(StaggerType)
+				{
+					case StaggerType.Total:
+						return Tween.TotalLoopingProgress >= Stagger;
+					case StaggerType.FinalLoop:
+						return Tween.HasReachedLoopEnd && Tween.TotalProgress >= Stagger;
+					case StaggerType.FinalLoopExclDelay:
+						return Tween.HasReachedLoopEnd && Tween.HasNoDelayRemaining && Tween.Progress >= Stagger;
+					default:
+						throw new System.Exception($"Not Implemented {StaggerType}");
+				}
 			}
 		}
 
+		public enum StaggerType
+		{
+			Total,
+			FinalLoop,
+			FinalLoopExclDelay
+		}
+
 		#endregion
+	}
+
+	public static class RaTweenSequenceExtensions
+	{
+		public static EntryData ToSequenceEntry(this RaTweenCore tween, float stagger = 1f, StaggerType staggerType = StaggerType.FinalLoopExclDelay)
+		{
+			return EntryData.Create(tween, stagger, staggerType);
+		}
 	}
 }
