@@ -4,7 +4,7 @@ using UnityEngine;
 namespace RaTweening
 {
 	[Serializable]
-	public abstract class RaTweenDynamic<TargetT, ValueT> : RaTween
+	public abstract class RaTweenDynamic<TargetT, ValueT> : RaTween, IRaTweenDynamic
 	{
 		#region Editor Variables
 
@@ -76,6 +76,35 @@ namespace RaTweening
 		}
 
 		#region Public Methods
+
+		Type IRaTweenDynamic.GetTargetType()
+		{
+			return typeof(TargetT);
+		}
+
+		void IRaTweenDynamic.SetTarget(object value)
+		{
+			if(value is TargetT target)
+			{
+				_target = target;
+			}
+		}
+
+		void IRaTweenDynamic.SetStart(object value)
+		{
+			if(value is ValueT start)
+			{
+				_start = start;
+			}
+		}
+
+		void IRaTweenDynamic.SetEnd(object value)
+		{
+			if(value is ValueT end)
+			{
+				_start = end;
+			}
+		}
 
 		public RaTweenDynamic<TargetT, ValueT> SetEndIsDelta(bool enabled = true)
 		{
@@ -184,5 +213,13 @@ namespace RaTweening
 		}
 
 		#endregion
+	}
+
+	public interface IRaTweenDynamic
+	{
+		Type GetTargetType();
+		void SetTarget(object value);
+		void SetStart(object value);
+		void SetEnd(object value);
 	}
 }

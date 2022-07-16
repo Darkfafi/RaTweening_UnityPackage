@@ -52,6 +52,7 @@ namespace RaTweening
 		#endregion
 
 		#region Protected Methods
+
 		protected override void SetDefaultValues()
 		{
 			SetEasing(AnimationCurve.Linear(0f, 0f, 1f, 1f));
