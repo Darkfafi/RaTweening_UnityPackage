@@ -2,6 +2,7 @@
 using UnityEditor;
 using UnityEditorInternal;
 using UnityEngine;
+using RaTweening.Core;
 
 namespace RaTweening
 {
@@ -24,7 +25,7 @@ namespace RaTweening
 			try
 			{
 				_drawer = new RaTweenElementEditorDrawer(serializedObject);
-				_tweensProperty = serializedObject.FindProperty("_sequenceElements");
+				_tweensProperty = serializedObject.FindProperty("_sequenceEntries");
 				_orderableList = new ReorderableList(serializedObject, _tweensProperty, true, true, false, false);
 				_orderableList.drawElementCallback = OnDrawNestedItem;
 				_orderableList.drawHeaderCallback = OnDrawHeader;
@@ -84,7 +85,7 @@ namespace RaTweening
 					{
 						for(int i = 0; i < _tweensProperty.arraySize; i++)
 						{
-							DrawElement(_tweensProperty.GetArrayElementAtIndex(i), i);
+							DrawElementEntry(_tweensProperty.GetArrayElementAtIndex(i), i);
 						}
 					}
 				}
@@ -118,19 +119,23 @@ namespace RaTweening
 			}
 		}
 
-		private void DrawElement(SerializedProperty serializedProp, int index)
+		private void DrawElementEntry(SerializedProperty serializedProp, int index)
 		{
-			var item = serializedProp.objectReferenceValue;
+			var serializedEntry = serializedProp;
 
-			if(item == null)
+			if(serializedEntry == null)
 			{
 				EditorGUILayout.LabelField("Item Empty");
 				return;
 			}
 
-			EditorGUILayout.BeginHorizontal("helpBox");
+			var serializedElement = serializedProp.FindPropertyRelative("TweenElement");
+			var serializedStagger = serializedProp.FindPropertyRelative("Stagger");
+			//var serializedStaggerInclDelay = serializedProp.FindPropertyRelative("StaggerIncludesDelay");
+
+			if(serializedElement != null && serializedElement.objectReferenceValue is RaTweenerElementBase element)
 			{
-				if(item is RaTweenerElementBase element)
+				EditorGUILayout.BeginHorizontal("helpBox");
 				{
 					string oldName = element.GetName();
 					EditorGUILayout.BeginHorizontal();
@@ -158,21 +163,29 @@ namespace RaTweening
 							return;
 						}
 					}
+
 				}
-			}
-			EditorGUILayout.EndHorizontal();
-			if(serializedProp.isExpanded)
-			{
-				if(!_cachedEditors.TryGetValue(item, out Editor editor))
+				EditorGUILayout.EndHorizontal();
+				if(serializedProp.isExpanded)
 				{
-					_cachedEditors[item] = editor = CreateEditor(item);
+					if(!_cachedEditors.TryGetValue(element, out Editor editor))
+					{
+						_cachedEditors[element] = editor = CreateEditor(element);
+					}
+					EditorGUILayout.BeginVertical("frameBox");
+					{
+						editor.OnInspectorGUI();
+						EditorGUILayout.BeginVertical("box");
+						{
+							EditorGUILayout.LabelField(new GUIContent("Sequence Stagger", "How much % of this tween has to be finished in order to start the next tween in the sequence"), EditorStyles.boldLabel);
+							EditorGUILayout.PropertyField(serializedStagger, new GUIContent("Stagger: "));
+							//EditorGUILayout.PropertyField(serializedStaggerInclDelay, new GUIContent("Stagger Incl Delay: "));
+						}
+						EditorGUILayout.EndVertical();
+						editor.serializedObject.ApplyModifiedProperties();
+					}
+					EditorGUILayout.EndVertical();
 				}
-				EditorGUILayout.BeginVertical("frameBox");
-				{
-					editor.OnInspectorGUI();
-					editor.serializedObject.ApplyModifiedProperties();
-				}
-				EditorGUILayout.EndVertical();
 			}
 		}
 
@@ -188,7 +201,8 @@ namespace RaTweening
 		private void OnDrawNestedItem(Rect rect, int index, bool isActive, bool isFocused)
 		{
 			SerializedProperty serializedSequenceItem = _orderableList.serializedProperty.GetArrayElementAtIndex(index);
-			RaTweenerElementBase sequenceElement = serializedSequenceItem.objectReferenceValue as RaTweenerElementBase;
+			var elementProp = serializedSequenceItem.FindPropertyRelative("TweenElement");
+			RaTweenerElementBase sequenceElement = elementProp.objectReferenceValue as RaTweenerElementBase;
 
 			int currentWidth = 0;
 

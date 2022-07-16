@@ -10,7 +10,7 @@ namespace RaTweening
 		#region Editor Variables
 
 		[SerializeField, SerializeReference]
-		private List<RaTweenCore> _tweens = new List<RaTweenCore>();
+		private List<EntryData> _sequenceEntries = new List<EntryData>();
 
 		#endregion
 
@@ -18,24 +18,24 @@ namespace RaTweening
 
 		private RaTweeningProcessor _processor = new RaTweeningProcessor();
 		private int _index;
-		private RaTweenCore _currentTween;
+		private EntryData _headEntry;
 		private float _time;
 
 		#endregion
 
 		#region Properties
 
-		public override bool IsValid => _tweens.Count > 0;
+		public override bool IsValid => _sequenceEntries.Count > 0;
 
 		#endregion
 
-		public RaTweenSequence()
-			: this(null)
+		private RaTweenSequence()
+			: this(new RaTweenCore[] { })
 		{
 		
 		}
 
-		public RaTweenSequence(RaTweenCore[] tweens)
+		private RaTweenSequence(RaTweenCore[] tweens)
 			: base(0f)
 		{
 			tweens = tweens ?? new RaTweenCore[] { };
@@ -45,36 +45,60 @@ namespace RaTweening
 			}
 		}
 
+		internal RaTweenSequence(IList<EntryData> entries)
+			: base(0f)
+		{
+			AppendTweens(entries ?? new EntryData[] { });
+		}
+
 		#region Public Methods
 
-		public static RaTweenSequence Create(params RaTweenCore[] tweens)
+		public static RaTweenSequence Create(RaTweenCore[] tweens)
 		{
 			RaTweenSequence sequence = new RaTweenSequence(tweens);
 			RaTweeningCore.Instance.RegisterTween(sequence);
 			return sequence;
 		}
 
-		public RaTweenSequence AppendTween(RaTweenCore tween)
+		public static RaTweenSequence Create(params EntryData[] tweens)
 		{
-			if(CanBeModified() && tween.CanBeModified())
+			RaTweenSequence sequence = new RaTweenSequence(tweens);
+			RaTweeningCore.Instance.RegisterTween(sequence);
+			return sequence;
+		}
+
+		public RaTweenSequence AppendTween(RaTweenCore tween, float stagger = 1f)
+		{
+			return AppendTween(new EntryData(tween, stagger));
+		}
+
+		public RaTweenSequence AppendTween(EntryData entry)
+		{
+			return AppendTweens(new EntryData[] { entry });
+		}
+
+		public RaTweenSequence AppendTweens(IList<EntryData> entries)
+		{
+			if(CanBeModified())
 			{
-				if(RaTweeningCore.HasInstance)
+				for(int i = 0, c = entries.Count; i < c; i++)
 				{
-					RaTweeningCore.Instance.UnregisterTween(tween);
+					var entry = entries[i];
+					if(entry.IsValidForAppend)
+					{
+						RaTweenCore tween = entry.Tween;
+
+						if(RaTweeningCore.HasInstance)
+						{
+							RaTweeningCore.Instance.UnregisterTween(tween);
+						}
+
+						tween.SetStateInternal(State.Data);
+						_sequenceEntries.Add(entry);
+					}
 				}
 
-				if(tween.IsInfiniteLoop)
-				{
-					SetInfiniteDuration();
-				}
-
-				if(!IsInfinite)
-				{
-					SetDuration(Duration + tween.TotalLoopingDuration);
-				}
-
-				tween.SetStateInternal(State.Data);
-				_tweens.Add(tween);
+				CalculateDuration();
 			}
 			return this;
 		}
@@ -97,15 +121,14 @@ namespace RaTweening
 
 		protected override RaTweenCore CloneSelf()
 		{
-			var copyTweens = new RaTweenCore[_tweens.Count];
+			EntryData[] entries = new EntryData[_sequenceEntries.Count];
 
-			for(int i = 0; i < copyTweens.Length; i++)
+			for(int i = 0, c = entries.Length; i < c; i++)
 			{
-				copyTweens[i] = _tweens[i].Clone();
+				entries[i] = _sequenceEntries[i].Clone();
 			}
 
-			RaTweenSequence sequence = new RaTweenSequence(copyTweens);
-			return sequence;
+			return new RaTweenSequence(entries);
 		}
 
 		protected override void Dispose()
@@ -116,12 +139,13 @@ namespace RaTweening
 
 		protected override void Evaluate(float normalizedValue)
 		{
-			if(_currentTween == null || _currentTween.IsCompleted)
+			if(_headEntry == null || _headEntry.ReadyToStartNext())
 			{
 				_index++;
-				if(_index < _tweens.Count)
+				if(_index < _sequenceEntries.Count)
 				{
-					_processor.RegisterTween(_currentTween = _tweens[_index].Clone());
+					_headEntry = _sequenceEntries[_index].Clone();
+					_processor.RegisterTween(_headEntry.Tween);
 				}
 			}
 
@@ -134,7 +158,7 @@ namespace RaTweening
 
 		protected override void PerformEvaluation()
 		{
-			if(_tweens.Count > 0)
+			if(_sequenceEntries.Count > 0)
 			{
 				Evaluate(Progress);
 			}
@@ -149,11 +173,70 @@ namespace RaTweening
 
 		#region Private Methods
 
+		private void CalculateDuration()
+		{
+			if(IsInfinite)
+			{
+				return;
+			}
+
+			float newStartTime = 0f;
+			float newDuration = 0f;
+			for(int i = 0, c = _sequenceEntries.Count; i < c; i++)
+			{
+				var entry = _sequenceEntries[i];
+				
+				if(entry.Tween.IsInfiniteLoop)
+				{
+					SetInfiniteDuration();
+					return;
+				}
+
+				float entryTweenDuration = entry.Tween.TotalLoopingDuration;
+				newDuration = newStartTime + entryTweenDuration;
+				newStartTime += entryTweenDuration * entry.Stagger;
+			}
+
+			SetDuration(newDuration);
+		}
+
 		private void ClearData()
 		{
-			_currentTween = null;
+			_headEntry = null;
 			_index = -1;
 			_time = 0f;
+		}
+
+		#endregion
+
+		#region Nested
+
+		public class EntryData
+		{
+			public readonly RaTweenCore Tween;
+			public readonly float Stagger;
+
+			public bool IsValidForAppend => Tween != null && Tween.CanBeModified();
+
+			public EntryData(RaTweenCore tween, float stagger = 1f)
+			{
+				Tween = tween;
+				Stagger = stagger;
+			}
+
+			public EntryData Clone()
+			{
+				return new EntryData(Tween.Clone(), Stagger);
+			}
+
+			public bool ReadyToStartNext()
+			{
+				if(Tween == null)
+				{
+					return true;
+				}
+				return Tween.TotalLoopingProgress >= Stagger;
+			}
 		}
 
 		#endregion

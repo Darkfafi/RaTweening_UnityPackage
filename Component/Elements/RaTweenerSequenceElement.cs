@@ -9,8 +9,8 @@ namespace RaTweening
 	{
 		#region Editor Variables
 
-		[SerializeField, HideInInspector, SerializeReference]
-		private List<RaTweenerElementBase> _sequenceElements = new List<RaTweenerElementBase>();
+		[SerializeField, HideInInspector]
+		private List<EntryData> _sequenceEntries = new List<EntryData>();
 
 		#endregion
 
@@ -18,17 +18,17 @@ namespace RaTweening
 
 		protected void OnDestroy()
 		{
-			if(_sequenceElements != null && _sequenceElements.Count > 0)
+			if(_sequenceEntries != null && _sequenceEntries.Count > 0)
 			{
-				for(int i = _sequenceElements.Count - 1; i >= 0; i--)
+				for(int i = _sequenceEntries.Count - 1; i >= 0; i--)
 				{
-					RaTweenerElementBase tweenElement = _sequenceElements[i];
+					RaTweenerElementBase tweenElement = _sequenceEntries[i].TweenElement;
 					if(tweenElement)
 					{
 #if UNITY_EDITOR
 						if(RaTweenerComponentEditor.TryRemoveTween(tweenElement))
 						{
-							_sequenceElements.RemoveAt(i);
+							_sequenceEntries.RemoveAt(i);
 						}
 #else
 						if(Application.isPlaying)
@@ -39,7 +39,7 @@ namespace RaTweening
 #endif
 					}
 				}
-				_sequenceElements.Clear();
+				_sequenceEntries.Clear();
 			}
 		}
 
@@ -49,17 +49,18 @@ namespace RaTweening
 
 		protected override void Init(Type tweenType)
 		{
-			_sequenceElements = new List<RaTweenerElementBase>();
+			_sequenceEntries = new List<EntryData>();
 		}
 
 		protected override RaTweenCore CreateTweenCore()
 		{
-			RaTweenCore[] sequence = new RaTweenCore[_sequenceElements.Count];
-			for(int i = 0; i < sequence.Length; i++)
+			RaTweenSequence.EntryData[] entries = new RaTweenSequence.EntryData[_sequenceEntries.Count];
+			for(int i = 0, c = entries.Length; i < c; i++)
 			{
-				sequence[i] = _sequenceElements[i].CreateTween();
+				var entry = _sequenceEntries[i];
+				entries[i] = new RaTweenSequence.EntryData(entry.TweenElement.CreateTween(), entry.Stagger);
 			}
-			return new RaTweenSequence(sequence);
+			return new RaTweenSequence(entries);
 		}
 
 		protected override string GetElementName()
@@ -73,17 +74,42 @@ namespace RaTweening
 
 		internal bool RegisterTweenElement(RaTweenerElementBase element)
 		{
-			if(!_sequenceElements.Contains(element))
+			_sequenceEntries.Add(new EntryData()
 			{
-				_sequenceElements.Add(element);
-				return true;
-			}
-			return false;
+				TweenElement = element,
+				Stagger = 1f
+			});
+
+			return true;
 		}
 
 		internal bool UnregisterTweenElement(RaTweenerElementBase element)
 		{
-			return _sequenceElements.Remove(element);
+			for(int i = _sequenceEntries.Count - 1; i >= 0; i--)
+			{
+				var entry = _sequenceEntries[i];
+				if(entry.TweenElement == element)
+				{
+					_sequenceEntries.RemoveAt(i);
+					return true;
+				}
+			}
+			return false;
+		}
+
+		#endregion
+
+		#region Nested
+
+		[Serializable]
+		public struct EntryData
+		{
+			[SerializeReference]
+			public RaTweenerElementBase TweenElement;
+			[Range(0f, 1f)]
+			public float Stagger;
+
+			public bool StaggerIncludesDelay;
 		}
 
 		#endregion
