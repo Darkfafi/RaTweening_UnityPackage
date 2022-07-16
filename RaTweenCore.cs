@@ -5,12 +5,22 @@ namespace RaTweening
 {
 	public abstract class RaTweenCore
 	{
+		#region Consts
+
+		public const int InfiniteLoopingValue = -1;
+
+		#endregion
+
 		#region Events
 
-		private Action _onSetupEvent;
-		private Action _onStartEvent;
-		private Action _onCompletedEvent;
-		private Action _onKillEvent;
+		public delegate void CallbackHandler();
+		public delegate void LoopCallbackHandler(int loopCount);
+
+		private CallbackHandler _onSetupEvent;
+		private CallbackHandler _onStartEvent;
+		private CallbackHandler _onCompletedEvent;
+		private CallbackHandler _onKillEvent;
+		private LoopCallbackHandler _onLoopEvent;
 
 		#endregion
 
@@ -18,6 +28,9 @@ namespace RaTweening
 
 		private RaTweenTimeline _process;
 		private RaTweenTimeline _delay;
+
+		// Tracker
+		private int _loopCount = 0;
 
 		#endregion
 
@@ -38,22 +51,89 @@ namespace RaTweening
 		public float Progress => _process.Progress;
 		public float Time => _process.Time;
 
-		// Total
+		// Progress And Delay
 		public float TotalTime => _delay.Time + Time;
-		public bool IsEmpty => _delay.IsEmpty && _process.IsEmpty;
 		public float TotalDuration => Delay + Duration;
-		public float TotalProgress => IsEmpty ? 0f : (_delay.Time + _process.Time) / TotalDuration;
-		public bool IsCompleted => _process.IsCompleted && HasNoDelayRemaining;
+		public float TotalProgress => IsEmpty ? 0f : TotalTime / TotalDuration;
+		public bool IsTotalCompleted => _process.IsCompleted && HasNoDelayRemaining;
+
+		// Looping
+		public bool IsLoop => Loops != 0;
+		public bool IsInfiniteLoop => Loops == InfiniteLoopingValue;
+
+		public int Loops
+		{
+			get; private set;
+		}
+
+		public float TotalLoopingTime
+		{
+			get
+			{
+				if(IsInfiniteLoop)
+				{
+					return InfiniteLoopingValue;
+				}
+
+				return TotalTime + (_loopCount * TotalDuration);
+			}
+		}
+
+		public float TotalLoopingDuration
+		{
+			get
+			{
+				if(IsInfiniteLoop)
+				{
+					return InfiniteLoopingValue;
+				}
+
+				return TotalDuration + (Loops * TotalDuration);
+			}
+		}
+
+		public float TotalLoopingProgress
+		{
+			get
+			{
+				if(IsInfiniteLoop)
+				{
+					return InfiniteLoopingValue;
+				}
+
+				return IsEmpty ? 0f : TotalLoopingTime / TotalLoopingDuration;
+			}
+		}
+
+		public bool HasReachedLoopEnd
+		{
+			get
+			{
+				if(IsFinite)
+				{
+					return _loopCount >= Loops;
+				}
+
+				return false;
+			}
+		}
 
 		// Core
+		public bool IsFinite => Loops >= 0;
+		public bool IsEmpty => _delay.IsEmpty && _process.IsEmpty;
 		public State TweenState
+		{
+			get; private set;
+		}
+
+		public bool IsCompleted
 		{
 			get; private set;
 		}
 
 		#endregion
 
-		public RaTweenCore(float duration, float delay)
+		public RaTweenCore(float duration)
 		{
 			_delay = new RaTweenTimeline(0f);
 			_process = new RaTweenTimeline(0f);
@@ -61,7 +141,6 @@ namespace RaTweening
 			TweenState = State.None;
 
 			SetDuration(duration);
-			SetDelay(delay);
 		}
 
 		#region Public Methods
@@ -77,7 +156,7 @@ namespace RaTweening
 			return this;
 		}
 
-		public RaTweenCore ListenToSetup(Action callback)
+		public RaTweenCore ListenToSetup(CallbackHandler callback)
 		{
 			if(CanBeModified())
 			{
@@ -86,7 +165,7 @@ namespace RaTweening
 			return this;
 		}
 
-		public RaTweenCore ListenToStart(Action callback)
+		public RaTweenCore ListenToStart(CallbackHandler callback)
 		{
 			if(CanBeModified())
 			{
@@ -95,7 +174,16 @@ namespace RaTweening
 			return this;
 		}
 
-		public RaTweenCore ListenToComplete(Action callback)
+		public RaTweenCore ListenToLoop(LoopCallbackHandler callback)
+		{
+			if(CanBeModified())
+			{
+				_onLoopEvent += callback;
+			}
+			return this;
+		}
+
+		public RaTweenCore ListenToComplete(CallbackHandler callback)
 		{
 			if(CanBeModified())
 			{
@@ -104,13 +192,32 @@ namespace RaTweening
 			return this;
 		}
 
-		public RaTweenCore ListenToKill(Action callback)
+		public RaTweenCore ListenToKill(CallbackHandler callback)
 		{
 			if(CanBeModified())
 			{
 				_onKillEvent += callback;
 			}
 			return this;
+		}
+
+		public RaTweenCore SetLooping(int loopAmount)
+		{
+			if(CanBeModified())
+			{
+				Loops = loopAmount;
+			}
+			return this;
+		}
+
+		public RaTweenCore SetInfiniteLooping()
+		{
+			return SetLooping(InfiniteLoopingValue);
+		}
+
+		public RaTweenCore DisableLooping()
+		{
+			return SetLooping(0);
 		}
 
 		public RaTweenCore SetDelay(float delay)
@@ -125,6 +232,8 @@ namespace RaTweening
 		public RaTweenCore Clone()
 		{
 			RaTweenCore tween = CloneSelf();
+			tween.SetDelay(Delay);
+			tween.SetLooping(Loops);
 			return tween;
 		}
 
@@ -151,8 +260,13 @@ namespace RaTweening
 
 		internal void SetupInternal()
 		{
+			IsCompleted = false;
+
+			_loopCount = 0;
+			
 			_delay.Reset();
 			_process.Reset();
+
 			OnSetup();
 			_onSetupEvent?.Invoke();
 		}
@@ -178,6 +292,16 @@ namespace RaTweening
 			PerformEvaluation();
 		}
 
+		internal void LoopInternal()
+		{
+			_loopCount++;
+			_delay.Reset();
+			_process.Reset();
+			
+			OnLoop();
+			_onLoopEvent?.Invoke(_loopCount);
+		}
+
 		internal void KillInternal()
 		{
 			OnKill();
@@ -189,6 +313,7 @@ namespace RaTweening
 			_onCompletedEvent = null;
 			_onStartEvent = null;
 			_onSetupEvent = null;
+			_onLoopEvent = null;
 		}
 
 		internal void DisposeInternal()
@@ -198,8 +323,13 @@ namespace RaTweening
 
 		internal void CompleteInternal()
 		{
+			IsCompleted = true;
+
+			_delay.Complete();
 			_process.Complete();
+			
 			OnComplete();
+
 			_onCompletedEvent?.Invoke();
 			PerformEvaluation();
 		}
@@ -232,6 +362,11 @@ namespace RaTweening
 		protected virtual void OnStart()
 		{
 
+		}
+
+		protected virtual void OnLoop()
+		{
+		
 		}
 
 		protected virtual void OnComplete()

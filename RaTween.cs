@@ -19,12 +19,12 @@ namespace RaTweening
 		#endregion
 
 		public RaTween()
-			: this(AnimationCurve.Linear(0f, 0f, 1f, 1f), 0f)
+			: this(AnimationCurve.Linear(0f, 0f, 1f, 1f))
 		{ 
 		}
 
-		public RaTween(AnimationCurve curve, float delay)
-			: base(0f, delay)
+		public RaTween(AnimationCurve curve)
+			: base(0f)
 		{
 			SetEasing(curve);
 		}

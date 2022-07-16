@@ -9,6 +9,12 @@ namespace RaTweening
 		#region Editor Variables
 
 		[SerializeField, HideInInspector]
+		private LoopAllowStage _loopingAllowStage = LoopAllowStage.ToInfinity;
+
+		[SerializeField, HideInInspector]
+		private int _loops = 0;
+
+		[SerializeField, HideInInspector]
 		private float _delay = 0f;
 
 		[SerializeField, HideInInspector]
@@ -16,6 +22,9 @@ namespace RaTweening
 
 		[SerializeField, HideInInspector]
 		private UnityEvent _onStart = null;
+
+		[SerializeField, HideInInspector]
+		private UnityEvent _onLoop = null;
 
 		[SerializeField, HideInInspector]
 		private UnityEvent _onComplete = null;
@@ -35,14 +44,26 @@ namespace RaTweening
 			return CreateTweenCore()
 				.ListenToSetup(() => _onSetup?.Invoke())
 				.ListenToStart(() => _onStart?.Invoke())
+				.ListenToLoop((loopCount) => _onLoop?.Invoke())
 				.ListenToComplete(() => _onComplete?.Invoke())
 				.ListenToKill(() => _onEnd?.Invoke())
-				.SetDelay(_delay);
+				.SetDelay(_delay)
+				.SetLooping(_loops);
 		}
 
 		#endregion
 
 		#region Internal Methods
+
+		internal LoopAllowStage GetLoopAllowStage()
+		{
+			return _loopingAllowStage;
+		}
+
+		internal void SetLoopingAllowStage(LoopAllowStage stage)
+		{
+			_loopingAllowStage = stage;
+		}
 
 		internal void Initialize(Type tweenType)
 		{
@@ -66,6 +87,17 @@ namespace RaTweening
 		protected abstract void Init(Type tweenType);
 		protected abstract string GetElementName();
 		protected abstract RaTweenCore CreateTweenCore();
+
+		#endregion
+
+		#region Enum
+
+		public enum LoopAllowStage
+		{
+			ToInfinity,
+			ToFinite,
+			None,
+		}
 
 		#endregion
 	}

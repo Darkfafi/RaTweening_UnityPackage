@@ -1,15 +1,10 @@
-﻿using RaTweening.Supyrb;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using UnityEditor;
-using UnityEditor.UIElements;
 using UnityEditorInternal;
 using UnityEngine;
-using UnityEngine.UIElements;
 
 namespace RaTweening
 {
-
-
 	[CustomEditor(typeof(RaTweenerSequenceElement))]
 	public class RaTweenSequenceEditor : Editor
 	{
@@ -113,6 +108,7 @@ namespace RaTweening
 				RaTweenerSequenceElement self = serializedObject.targetObject as RaTweenerSequenceElement;
 				if(self.RegisterTweenElement(element))
 				{
+					element.SetLoopingAllowStage(RaTweenerElementBase.LoopAllowStage.ToFinite);
 					AssetDatabase.SaveAssets();
 					EditorUtility.SetDirty(serializedObject.targetObject);
 				}

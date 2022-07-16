@@ -40,9 +40,17 @@ namespace RaTweening.Core
 
 						case RaTweenCore.State.InProgress:
 							tween.StepTweenInternal(deltaTime);
-							if(tween.IsCompleted)
+							if(tween.IsTotalCompleted)
 							{
-								tween.SetStateInternal(RaTweenCore.State.Completed);
+								if(tween.HasReachedLoopEnd)
+								{
+									tween.SetStateInternal(RaTweenCore.State.Completed);
+								}
+								else
+								{
+									tween.SetStateInternal(RaTweenCore.State.InDelay);
+									tween.LoopInternal();
+								}
 							}
 							break;
 					}
@@ -57,7 +65,7 @@ namespace RaTweening.Core
 				{
 					case RaTweenCore.State.Started:
 						tween.StartInternal();
-						if(tween.IsCompleted)
+						if(tween.IsTotalCompleted)
 						{
 							tween.SetStateInternal(RaTweenCore.State.Completed);
 						}

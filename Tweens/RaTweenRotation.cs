@@ -29,13 +29,13 @@ namespace RaTweening
 		#endregion
 
 		public RaTweenRotation()
-			: this(null, Vector3.zero, Vector3.zero, default, 0f)
+			: this(null, Vector3.zero, Vector3.zero, default)
 		{
 
 		}
 
-		public RaTweenRotation(Transform target, Vector3 startRot, Vector3 endRot, AnimationCurve easing, float delay)
-			: base(easing, delay)
+		public RaTweenRotation(Transform target, Vector3 startRot, Vector3 endRot, AnimationCurve easing)
+			: base(easing)
 		{
 			_target = target;
 			_startRot = startRot;
@@ -43,8 +43,8 @@ namespace RaTweening
 			_dynamicStartRotation = false;
 		}
 
-		public RaTweenRotation(Transform target, Vector3 endRot, AnimationCurve easing, float delay)
-			: this(target, target.position, endRot, easing, delay)
+		public RaTweenRotation(Transform target, Vector3 endRot, AnimationCurve easing)
+			: this(target, target.position, endRot, easing)
 		{
 			_dynamicStartRotation = true;
 		}
@@ -63,7 +63,7 @@ namespace RaTweening
 
 		protected override RaTweenCore CloneSelf()
 		{
-			RaTweenRotation tween = new RaTweenRotation(_target, _startRot, _endRot, Easing, Delay);
+			RaTweenRotation tween = new RaTweenRotation(_target, _startRot, _endRot, Easing);
 			tween._dynamicStartRotation = _dynamicStartRotation;
 			return tween;
 		}
@@ -89,29 +89,29 @@ namespace RaTweening
 
 	public static class RaTweenRotationExtensions
 	{
-		public static RaTweenCore TweenRotateX(this Transform self, float rotX, AnimationCurve easing, float delay = 0f)
+		public static RaTweenCore TweenRotateX(this Transform self, float rotX, AnimationCurve easing)
 		{
-			return new RaTweenRotation(self, Vector3.right * rotX, easing, delay).Play();
+			return new RaTweenRotation(self, Vector3.right * rotX, easing).Play();
 		}
 
-		public static RaTweenCore TweenRotateY(this Transform self, float rotY, AnimationCurve easing, float delay = 0f)
+		public static RaTweenCore TweenRotateY(this Transform self, float rotY, AnimationCurve easing)
 		{
-			return new RaTweenRotation(self, Vector3.up * rotY, easing, delay).Play();
+			return new RaTweenRotation(self, Vector3.up * rotY, easing).Play();
 		}
 
-		public static RaTweenCore TweenRotateZ(this Transform self, float rotZ, AnimationCurve easing, float delay = 0f)
+		public static RaTweenCore TweenRotateZ(this Transform self, float rotZ, AnimationCurve easing)
 		{
-			return new RaTweenRotation(self, Vector3.forward * rotZ, easing, delay).Play();
+			return new RaTweenRotation(self, Vector3.forward * rotZ, easing).Play();
 		}
 
-		public static RaTweenCore TweenRotate(this Transform self, Vector3 rot, AnimationCurve easing, float delay = 0f)
+		public static RaTweenCore TweenRotate(this Transform self, Vector3 rot, AnimationCurve easing)
 		{
-			return new RaTweenRotation(self, rot, easing, delay).Play();
+			return new RaTweenRotation(self, rot, easing).Play();
 		}
 
-		public static RaTweenCore TweenRotate(this Transform self, Vector3 startRot, Vector3 endRot, AnimationCurve easing, float delay = 0f)
+		public static RaTweenCore TweenRotate(this Transform self, Vector3 startRot, Vector3 endRot, AnimationCurve easing)
 		{
-			return new RaTweenRotation(self, startRot, endRot, easing, delay).Play();
+			return new RaTweenRotation(self, startRot, endRot, easing).Play();
 		}
 	}
 

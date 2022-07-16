@@ -36,7 +36,7 @@ namespace RaTweening
 		}
 
 		public RaTweenSequence(RaTweenCore[] tweens)
-			: base(0f, 0f)
+			: base(0f)
 		{
 			tweens = tweens ?? new RaTweenCore[] { };
 			for(int i = 0; i < tweens.Length; i++)
@@ -62,9 +62,16 @@ namespace RaTweening
 				{
 					RaTweeningCore.Instance.UnregisterTween(tween);
 				}
+
+				if(tween.IsInfiniteLoop)
+				{
+					tween.DisableLooping();
+					Debug.LogWarning("Disabled Looping for Appended Tween. InfiniteLooping Tweens can't be added to a Sequence");
+				}
+
 				tween.SetStateInternal(State.Data);
 				_tweens.Add(tween);
-				SetDuration(Duration + tween.TotalDuration);
+				SetDuration(Duration + tween.TotalLoopingDuration);
 			}
 			return this;
 		}
@@ -76,7 +83,7 @@ namespace RaTweening
 				if(_tweens.Remove(tween))
 				{
 					tween.SetStateInternal(State.Dead);
-					SetDuration(Duration - tween.TotalDuration);
+					SetDuration(Duration - tween.TotalLoopingDuration);
 				}
 			}
 			return this;
@@ -89,9 +96,13 @@ namespace RaTweening
 		protected override void OnSetup()
 		{
 			base.OnSetup();
-			_currentTween = null;
-			_index = -1;
-			_time = 0f;
+			ClearData();
+		}
+
+		protected override void OnLoop()
+		{
+			base.OnLoop();
+			ClearData();
 		}
 
 		protected override RaTweenCore CloneSelf()
@@ -110,8 +121,7 @@ namespace RaTweening
 		protected override void Dispose()
 		{
 			_processor.Dispose();
-			_currentTween = null;
-			_index = -1;
+			ClearData();
 		}
 
 		protected override void Evaluate(float normalizedValue)
@@ -143,6 +153,17 @@ namespace RaTweening
 		protected override void SetDefaultValues()
 		{
 
+		}
+
+		#endregion
+
+		#region Private Methods
+
+		private void ClearData()
+		{
+			_currentTween = null;
+			_index = -1;
+			_time = 0f;
 		}
 
 		#endregion
