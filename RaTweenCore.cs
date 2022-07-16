@@ -26,8 +26,8 @@ namespace RaTweening
 
 		#region Variables
 
-		private RaTweenTimeline _process;
-		private RaTweenTimeline _delay;
+		private RaTweenProgressor _process;
+		private RaTweenProgressor _delay;
 
 		// Tracker
 		private int _loopCount = 0;
@@ -47,6 +47,7 @@ namespace RaTweening
 		public bool HasNoDelayRemaining => _delay.IsCompleted;
 
 		// Process
+		public bool IsInfinite => _process.IsInfinite;
 		public float Duration => _process.Duration;
 		public float Progress => _process.Progress;
 		public float Time => _process.Time;
@@ -109,7 +110,7 @@ namespace RaTweening
 		{
 			get
 			{
-				if(IsFinite)
+				if(Loops >= 0)
 				{
 					return _loopCount >= Loops;
 				}
@@ -119,7 +120,6 @@ namespace RaTweening
 		}
 
 		// Core
-		public bool IsFinite => Loops >= 0;
 		public bool IsEmpty => _delay.IsEmpty && _process.IsEmpty;
 		public State TweenState
 		{
@@ -135,8 +135,8 @@ namespace RaTweening
 
 		public RaTweenCore(float duration)
 		{
-			_delay = new RaTweenTimeline(0f);
-			_process = new RaTweenTimeline(0f);
+			_delay = new RaTweenProgressor(0f);
+			_process = new RaTweenProgressor(0f);
 
 			TweenState = State.None;
 
@@ -344,6 +344,15 @@ namespace RaTweening
 		#region Protected Methods
 
 		protected abstract void SetDefaultValues();
+
+		protected RaTweenCore SetInfiniteDuration()
+		{
+			if(CanBeModified())
+			{
+				_process.SetInfiniteDuration();
+			}
+			return this;
+		}
 
 		protected RaTweenCore SetDuration(float duration)
 		{

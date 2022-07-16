@@ -108,7 +108,6 @@ namespace RaTweening
 				RaTweenerSequenceElement self = serializedObject.targetObject as RaTweenerSequenceElement;
 				if(self.RegisterTweenElement(element))
 				{
-					element.SetLoopingAllowStage(RaTweenerElementBase.LoopAllowStage.ToFinite);
 					AssetDatabase.SaveAssets();
 					EditorUtility.SetDirty(serializedObject.targetObject);
 				}

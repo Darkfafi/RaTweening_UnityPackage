@@ -65,26 +65,16 @@ namespace RaTweening
 
 				if(tween.IsInfiniteLoop)
 				{
-					tween.DisableLooping();
-					Debug.LogWarning("Disabled Looping for Appended Tween. InfiniteLooping Tweens can't be added to a Sequence");
+					SetInfiniteDuration();
+				}
+
+				if(!IsInfinite)
+				{
+					SetDuration(Duration + tween.TotalLoopingDuration);
 				}
 
 				tween.SetStateInternal(State.Data);
 				_tweens.Add(tween);
-				SetDuration(Duration + tween.TotalLoopingDuration);
-			}
-			return this;
-		}
-
-		public RaTweenSequence RemoveTween(RaTweenCore tween)
-		{
-			if(CanBeModified() && tween.CanBeModified())
-			{
-				if(_tweens.Remove(tween))
-				{
-					tween.SetStateInternal(State.Dead);
-					SetDuration(Duration - tween.TotalLoopingDuration);
-				}
 			}
 			return this;
 		}

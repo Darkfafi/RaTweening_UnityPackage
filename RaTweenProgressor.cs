@@ -2,8 +2,14 @@
 
 namespace RaTweening
 {
-	internal class RaTweenTimeline
+	internal class RaTweenProgressor
 	{
+		#region Consts
+
+		public const float InfinityValue = -1f;
+
+		#endregion
+
 		#region Properties
 
 		public float Time
@@ -25,6 +31,11 @@ namespace RaTweening
 					return 0f;
 				}
 
+				if(IsInfinite)
+				{
+					return InfinityValue;
+				}
+
 				return Time / Duration;
 			}
 		}
@@ -33,15 +44,22 @@ namespace RaTweening
 
 		public bool IsEmpty => Mathf.Approximately(Duration, 0f);
 
+		public bool IsInfinite => Mathf.Approximately(Duration, InfinityValue);
+
 		#endregion
 
-		public RaTweenTimeline(float duration)
+		public RaTweenProgressor(float duration)
 		{
 			Time = 0f;
 			SetDuration(duration);
 		}
 
 		#region Public Methods
+
+		public void SetInfiniteDuration()
+		{
+			Duration = InfinityValue;
+		}
 
 		public void SetDuration(float duration)
 		{
@@ -55,11 +73,23 @@ namespace RaTweening
 
 		public void Step(float delta)
 		{
-			Time = Mathf.Clamp(Time + delta, 0f, Duration);
+			if(IsInfinite)
+			{
+				Time += delta;
+			}
+			else
+			{
+				Time = Mathf.Clamp(Time + delta, 0f, Duration);
+			}
 		}
 
 		public void Complete()
 		{
+			if(IsInfinite)
+			{
+				return;
+			}
+
 			Time = Duration;
 		}
 
