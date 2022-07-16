@@ -4,82 +4,47 @@ using UnityEngine;
 namespace RaTweening
 {
 	[Serializable]
-	public class RaTweenPosition : RaTween
+	public class RaTweenPosition : RaTweenDynamic<Transform, Vector3>
 	{
-		#region Editor Variables
-
-		[SerializeField]
-		private Transform _target = default;
-
-		[SerializeField]
-		private Vector3 _startPos = Vector3.zero;
-
-		[SerializeField]
-		private Vector3 _endPos = Vector3.zero;
-
-		[SerializeField]
-		private bool _dynamicStartPosition = false;
-
-		#endregion
-
-		#region Properties
-
-		public override bool IsValid => _target != null;
-
-		#endregion
-
 		public RaTweenPosition()
-			: this(null, Vector3.zero, Vector3.zero, default)
+			: base()
 		{
 
 		}
 
-		public RaTweenPosition(Transform target, Vector3 startPos, Vector3 endPos, AnimationCurve easing)
-			: base(easing)
+		public RaTweenPosition(Transform target, Vector3 startPos, Vector3 endPos, AnimationCurve easing, bool endIsDelta = false)
+			: base(target, startPos, endPos, easing, endIsDelta)
 		{
-			_target = target;
-			_startPos = startPos;
-			_endPos = endPos;
-			_dynamicStartPosition = false;
+
 		}
 
-		public RaTweenPosition(Transform target, Vector3 endPos, AnimationCurve easing)
-			: this(target, target.position, endPos, easing)
+		public RaTweenPosition(Transform target, Vector3 endPos, AnimationCurve easing, bool endIsDelta = false)
+			: base(target, endPos, easing, endIsDelta)
 		{
-			_dynamicStartPosition = true;
+
 		}
 
-		#region Protected
+		#region Protected Methods
 
-		protected override void OnStart()
+		protected override Vector3 GetDynamicStart()
 		{
-			base.OnStart();
+			return Target.position;
+		}
 
-			if(_dynamicStartPosition)
-			{
-				_startPos = _target.position;
-			}
+		protected override Vector3 GetEndByDelta(Vector3 start, Vector3 delta)
+		{
+			return start + delta;
+		}
+
+		protected override void DynamicEvaluation(float normalizedValue, Transform target, Vector3 start, Vector3 end)
+		{
+			Vector3 delta = end - start;
+			target.position = start + (delta * normalizedValue);
 		}
 
 		protected override RaTweenCore CloneSelf()
 		{
-			RaTweenPosition tween = new RaTweenPosition(_target, _startPos, _endPos, Easing);
-			tween._dynamicStartPosition = _dynamicStartPosition;
-			return tween;
-		}
-
-		protected override void Evaluate(float normalizedValue)
-		{
-			if(_target != null)
-			{
-				Vector3 delta = _endPos - _startPos;
-				_target.position = _startPos + (delta * normalizedValue);
-			}
-		}
-
-		protected override void Dispose()
-		{
-			_target = null;
+			return new RaTweenPosition();
 		}
 
 		#endregion

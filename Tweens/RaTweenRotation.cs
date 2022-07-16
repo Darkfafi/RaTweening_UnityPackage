@@ -4,81 +4,46 @@ using UnityEngine;
 namespace RaTweening
 {
 	[Serializable]
-	public class RaTweenRotation : RaTween
+	public class RaTweenRotation : RaTweenDynamic<Transform, Vector3>
 	{
-		#region Editor Variables
-
-		[SerializeField]
-		private Transform _target = default;
-
-		[SerializeField]
-		private Vector3 _startRot = Vector3.zero;
-
-		[SerializeField]
-		private Vector3 _endRot = Vector3.zero;
-
-		[SerializeField]
-		private bool _dynamicStartRotation = false;
-
-		#endregion
-
-		#region Properties
-
-		public override bool IsValid => _target != null;
-
-		#endregion
-
 		public RaTweenRotation()
-			: this(null, Vector3.zero, Vector3.zero, default)
+			: base()
 		{
 
 		}
 
-		public RaTweenRotation(Transform target, Vector3 startRot, Vector3 endRot, AnimationCurve easing)
-			: base(easing)
+		public RaTweenRotation(Transform target, Vector3 startRot, Vector3 endRot, AnimationCurve easing, bool endIsDelta = false)
+			: base(target, startRot, endRot, easing, endIsDelta)
 		{
-			_target = target;
-			_startRot = startRot;
-			_endRot = endRot;
-			_dynamicStartRotation = false;
+
 		}
 
-		public RaTweenRotation(Transform target, Vector3 endRot, AnimationCurve easing)
-			: this(target, target.position, endRot, easing)
+		public RaTweenRotation(Transform target, Vector3 endRot, AnimationCurve easing, bool endIsDelta = false)
+			: base(target, endRot, endRot, easing, endIsDelta)
 		{
-			_dynamicStartRotation = true;
+
 		}
 
-		#region Protected
+		#region Protected Methods
 
-		protected override void OnStart()
+		protected override Vector3 GetDynamicStart()
 		{
-			base.OnStart();
+			return Target.rotation.eulerAngles;
+		}
 
-			if(_dynamicStartRotation)
-			{
-				_startRot = _target.rotation.eulerAngles;
-			}
+		protected override Vector3 GetEndByDelta(Vector3 start, Vector3 delta)
+		{
+			return start + delta;
+		}
+
+		protected override void DynamicEvaluation(float normalizedValue, Transform target, Vector3 start, Vector3 end)
+		{
+			target.rotation = Quaternion.SlerpUnclamped(Quaternion.Euler(start), Quaternion.Euler(end), normalizedValue);
 		}
 
 		protected override RaTweenCore CloneSelf()
 		{
-			RaTweenRotation tween = new RaTweenRotation(_target, _startRot, _endRot, Easing);
-			tween._dynamicStartRotation = _dynamicStartRotation;
-			return tween;
-		}
-
-		protected override void Evaluate(float normalizedValue)
-		{
-			if(_target != null)
-			{
-				_target.rotation = Quaternion.SlerpUnclamped(Quaternion.Euler(_startRot), Quaternion.Euler(_endRot), normalizedValue);
-			}
-		}
-
-		protected override void Dispose()
-		{
-			_target = null;
+			return new RaTweenRotation();
 		}
 
 		#endregion
