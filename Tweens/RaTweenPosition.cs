@@ -42,7 +42,7 @@ namespace RaTweening
 			target.position = start + (delta * normalizedValue);
 		}
 
-		protected override RaTweenCore CloneSelf()
+		protected override RaTweenDynamic<Transform, Vector3> DynamicClone()
 		{
 			return new RaTweenPosition();
 		}

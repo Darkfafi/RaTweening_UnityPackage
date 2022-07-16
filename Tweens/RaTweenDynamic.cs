@@ -105,9 +105,17 @@ namespace RaTweening
 			return this;
 		}
 
-		public override RaTweenCore Clone()
+		#endregion
+
+		#region Protected Methods
+
+		protected abstract RaTweenDynamic<TargetT, ValueT> DynamicClone();
+		protected abstract ValueT GetDynamicStart();
+		protected abstract ValueT GetEndByDelta(ValueT start, ValueT delta);
+
+		protected override RaTweenCore CloneSelf()
 		{
-			RaTweenDynamic<TargetT, ValueT> clone = base.Clone() as RaTweenDynamic<TargetT, ValueT>;
+			RaTweenDynamic<TargetT, ValueT> clone = DynamicClone();
 			clone._target = _target;
 			clone._dynamicStart = _dynamicStart;
 			clone._start = _start;
@@ -117,13 +125,6 @@ namespace RaTweening
 			clone.SetEasing(Easing);
 			return clone;
 		}
-
-		#endregion
-
-		#region Protected Methods
-
-		protected abstract ValueT GetDynamicStart();
-		protected abstract ValueT GetEndByDelta(ValueT start, ValueT delta);
 
 		protected override void OnSetup()
 		{

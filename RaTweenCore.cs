@@ -229,7 +229,7 @@ namespace RaTweening
 			return this;
 		}
 
-		public virtual RaTweenCore Clone()
+		public RaTweenCore Clone()
 		{
 			RaTweenCore tween = CloneSelf();
 			tween.SetDelay(Delay);
