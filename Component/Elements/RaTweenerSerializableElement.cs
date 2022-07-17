@@ -7,7 +7,7 @@ namespace RaTweening
 	{
 		#region Editor Variables
 
-		[Header("Serialized Tween")]
+		[Header("RaTweenerElement")]
 		[SerializeField, SerializeReference]
 		private RaTweenCore _tween = null;
 

@@ -28,7 +28,7 @@ namespace RaTweening
 
 		public override void OnInspectorGUI()
 		{
-			DrawDefaultInspector();
+			RaTweenerComponentEditor.DrawDefaultInspectorWithoutScript(serializedObject);
 			_drawer.Draw();
 		}
 

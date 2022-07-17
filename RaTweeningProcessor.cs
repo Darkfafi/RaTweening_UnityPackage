@@ -25,6 +25,22 @@ namespace RaTweening.Core
 					// Stepping
 					switch(tween.TweenState)
 					{
+						case RaTweenCore.State.ToResume:
+							if(!tween.HasNoDelayRemaining)
+							{
+								tween.SetStateInternal(RaTweenCore.State.InDelay);
+								goto case RaTweenCore.State.InDelay;
+							}
+							else if(!tween.IsCompleted)
+							{
+								tween.SetStateInternal(RaTweenCore.State.InProgress);
+								goto case RaTweenCore.State.InProgress;
+							}
+							else
+							{
+								tween.SetStateInternal(RaTweenCore.State.Dead);
+							}
+							break;
 						case RaTweenCore.State.ToStart:
 							tween.SetupInternal();
 							tween.SetStateInternal(RaTweenCore.State.InDelay);

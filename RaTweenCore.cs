@@ -121,9 +121,33 @@ namespace RaTweening
 
 		// Core
 		public bool IsEmpty => _delay.IsEmpty && _process.IsEmpty;
+		
 		public State TweenState
 		{
 			get; private set;
+		}
+
+		public bool IsPlaying
+		{
+			get
+			{
+				switch(TweenState)
+				{
+					case State.InDelay:
+					case State.InProgress:
+						return true;
+					default:
+						return false;
+				}
+			}
+		}
+
+		public bool IsPaused
+		{
+			get
+			{
+				return TweenState == State.IsPaused;
+			}
 		}
 
 		public bool IsCompleted
@@ -150,10 +174,34 @@ namespace RaTweening
 			return RaTweeningCore.Instance.RegisterTween(this);
 		}
 
-		public RaTweenCore Kill()
+		public bool Pause()
 		{
-			SetStateInternal(State.Dead);
-			return this;
+			if(CanUseAPI() && IsPlaying)
+			{
+				SetStateInternal(State.IsPaused);
+				return true;
+			}
+			return false;
+		}
+
+		public bool Resume()
+		{
+			if(CanUseAPI() && IsPaused)
+			{
+				SetStateInternal(State.ToResume);
+				return true;
+			}
+			return false;
+		}
+
+		public bool Kill()
+		{
+			if(CanUseAPI())
+			{
+				SetStateInternal(State.Dead);
+				return true;
+			}
+			return false;
 		}
 
 		public RaTweenCore ListenToSetup(CallbackHandler callback)
@@ -395,18 +443,44 @@ namespace RaTweening
 
 		#endregion
 
+		#region Private Methods
+
+		private bool CanUseAPI()
+		{
+			switch(TweenState)
+			{
+				case State.Data:
+				case State.Dead:
+				case State.Completed:
+					return false;
+			}
+
+			return !IsCompleted;
+		}
+
+		#endregion
+
 		#region Internal
 
 		public enum State
 		{
-			None,
-			ToStart,
-			InDelay,
-			Started,
-			InProgress,
-			Completed,
-			Dead,
-			Data,
+			// Idle
+			None		= 0,
+
+			// Intent
+			ToStart		= 101,
+			ToResume	= 102,
+			
+			// Lifecycle
+			InDelay		= 201,
+			Started		= 202,
+			InProgress	= 203,
+			IsPaused	= 204,
+			Completed	= 205,
+			Dead		= 206,
+
+			// Type Lock
+			Data		= 301,
 		}
 
 		#endregion

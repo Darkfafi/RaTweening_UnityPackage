@@ -68,15 +68,17 @@ namespace RaTweening
 
 		public void Draw()
 		{
+			_elementSerializedObject.Update();
+
 			EditorGUILayout.BeginVertical("box");
 			{
-				_elementSerializedObject.Update();
 				EditorGUILayout.LabelField("Settings", EditorStyles.boldLabel);
 				_foldedOutPropertiesProps = DrawFoldout(_foldedOutPropertiesProps, "Properties", _propertiesProps, DrawLoopingProperties);
 				_foldedOutEventProps = DrawFoldout(_foldedOutEventProps, "Events", _eventProps, null);
-				_elementSerializedObject.ApplyModifiedProperties();
 			}
 			EditorGUILayout.EndVertical();
+
+			_elementSerializedObject.ApplyModifiedProperties();
 		}
 
 		#endregion

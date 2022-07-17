@@ -10,6 +10,12 @@ namespace RaTweening
 	[CustomEditor(typeof(RaTweenerComponent))]
 	public class RaTweenerComponentEditor : Editor
 	{
+		#region Consts
+
+		private static readonly string[] ExclProps = new string[] { "m_Script" };
+
+		#endregion
+
 		#region Variables
 
 		private static List<RaTweenerElementBase> _elementsToClear = new List<RaTweenerElementBase>();
@@ -28,8 +34,6 @@ namespace RaTweening
 
 		public override void OnInspectorGUI()
 		{
-			DrawDefaultInspector();
-
 			// Auto Fill Tweener
 			if(_tweenElementProperty != null && _tweenElementProperty.objectReferenceValue == null)
 			{
@@ -80,12 +84,21 @@ namespace RaTweening
 					_editor.OnInspectorGUI();
 					_editor.serializedObject.ApplyModifiedProperties();
 				}
+
+				DrawDefaultInspectorWithoutScript(serializedObject);
 			}
 		}
 
 		#endregion
 
 		#region Public Nethods
+
+		public static void DrawDefaultInspectorWithoutScript(SerializedObject serializedObject)
+		{
+			serializedObject.Update();
+			DrawPropertiesExcluding(serializedObject, ExclProps);
+			serializedObject.ApplyModifiedProperties();
+		}
 
 		public static bool TryGetRaTweenerElementAttribute(Type tweenType, out RaTweenerElementAttribute attribute, out string error)
 		{
