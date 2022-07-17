@@ -154,9 +154,6 @@ namespace RaTweening
 			}
 		}
 
-#endregion
-#region Nested
-
 		#endregion
 	}
 }
