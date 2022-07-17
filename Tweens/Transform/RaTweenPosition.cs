@@ -12,14 +12,14 @@ namespace RaTweening
 
 		}
 
-		public RaTweenPosition(Transform target, Vector3 startPos, Vector3 endPos, AnimationCurve easing, bool endIsDelta = false)
-			: base(target, startPos, endPos, easing, endIsDelta)
+		public RaTweenPosition(Transform target, Vector3 startPos, Vector3 endPos, float duration)
+			: base(target, startPos, endPos, duration)
 		{
 
 		}
 
-		public RaTweenPosition(Transform target, Vector3 endPos, AnimationCurve easing, bool endIsDelta = false)
-			: base(target, endPos, easing, endIsDelta)
+		public RaTweenPosition(Transform target, Vector3 endPos, float duration)
+			: base(target, endPos, duration)
 		{
 
 		}
@@ -54,29 +54,29 @@ namespace RaTweening
 
 	public static class RaTweenPositionExtensions
 	{
-		public static RaTweenCore TweenMoveX(this Transform self, float posX, AnimationCurve easing)
+		public static RaTweenPosition TweenMoveX(this Transform self, float posX, float duration)
 		{
-			return new RaTweenPosition(self, Vector3.right * posX, easing).Play();
+			return new RaTweenPosition(self, Vector3.right * posX, duration).Play();
 		}
 
-		public static RaTweenCore TweenMoveY(this Transform self, float posY, AnimationCurve easing)
+		public static RaTweenPosition TweenMoveY(this Transform self, float posY, float duration)
 		{
-			return new RaTweenPosition(self, Vector3.up * posY, easing).Play();
+			return new RaTweenPosition(self, Vector3.up * posY, duration).Play();
 		}
 
-		public static RaTweenCore TweenMoveZ(this Transform self, float posZ, AnimationCurve easing)
+		public static RaTweenPosition TweenMoveZ(this Transform self, float posZ, float duration)
 		{
-			return new RaTweenPosition(self, Vector3.forward * posZ, easing).Play();
+			return new RaTweenPosition(self, Vector3.forward * posZ, duration).Play();
 		}
 
-		public static RaTweenCore TweenMove(this Transform self, Vector3 pos, AnimationCurve easing)
+		public static RaTweenPosition TweenMove(this Transform self, Vector3 pos, float duration)
 		{
-			return new RaTweenPosition(self, pos, easing).Play();
+			return new RaTweenPosition(self, pos, duration).Play();
 		}
 
-		public static RaTweenCore TweenMove(this Transform self, Vector3 startPos, Vector3 endPos, AnimationCurve easing)
+		public static RaTweenPosition TweenMove(this Transform self, Vector3 startPos, Vector3 endPos, float duration)
 		{
-			return new RaTweenPosition(self, startPos, endPos, easing).Play();
+			return new RaTweenPosition(self, startPos, endPos, duration).Play();
 		}
 	}
 

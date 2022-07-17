@@ -11,14 +11,14 @@ namespace RaTweening
 
 		}
 
-		public RaTweenScale(Transform target, Vector3 startScale, Vector3 endScale, AnimationCurve easing, bool endIsDelta = false)
-			: base(target, startScale, endScale, easing, endIsDelta)
+		public RaTweenScale(Transform target, Vector3 startScale, Vector3 endScale, float duration)
+			: base(target, startScale, endScale, duration)
 		{
 
 		}
 
-		public RaTweenScale(Transform target, Vector3 endScale, AnimationCurve easing, bool endIsDelta = false)
-			: base(target, endScale, easing, endIsDelta)
+		public RaTweenScale(Transform target, Vector3 endScale, float duration)
+			: base(target, endScale, duration)
 		{
 
 		}
@@ -61,29 +61,39 @@ namespace RaTweening
 
 	public static class RaTweenScaleExtensions
 	{
-		public static RaTweenCore TweenScaleX(this Transform self, float posX, AnimationCurve easing)
+		public static RaTweenScale TweenScaleX(this Transform self, float scaleX, float duration)
 		{
-			return new RaTweenScale(self, Vector3.right * posX, easing).Play();
+			return new RaTweenScale(self, Vector3.right * scaleX, duration).Play();
 		}
 
-		public static RaTweenCore TweenScaleY(this Transform self, float posY, AnimationCurve easing)
+		public static RaTweenScale TweenScaleY(this Transform self, float scaleY, float duration)
 		{
-			return new RaTweenScale(self, Vector3.up * posY, easing).Play();
+			return new RaTweenScale(self, Vector3.up * scaleY, duration).Play();
 		}
 
-		public static RaTweenCore TweenScaleZ(this Transform self, float posZ, AnimationCurve easing)
+		public static RaTweenScale TweenScaleZ(this Transform self, float scaleX, float duration)
 		{
-			return new RaTweenScale(self, Vector3.forward * posZ, easing).Play();
+			return new RaTweenScale(self, Vector3.forward * scaleX, duration).Play();
 		}
 
-		public static RaTweenCore TweenScale(this Transform self, Vector3 pos, AnimationCurve easing)
+		public static RaTweenScale TweenScale(this Transform self, float scale, float duration)
 		{
-			return new RaTweenScale(self, pos, easing).Play();
+			return new RaTweenScale(self, Vector3.one * scale, duration).Play();
 		}
 
-		public static RaTweenCore TweenScale(this Transform self, Vector3 startScale, Vector3 endScale, AnimationCurve easing)
+		public static RaTweenScale TweenScale(this Transform self, float startScale, float endScale, float duration)
 		{
-			return new RaTweenScale(self, startScale, endScale, easing).Play();
+			return new RaTweenScale(self, Vector3.one * startScale, Vector3.one * endScale, duration).Play();
+		}
+
+		public static RaTweenScale TweenScale(this Transform self, Vector3 scale, float duration)
+		{
+			return new RaTweenScale(self, scale, duration).Play();
+		}
+
+		public static RaTweenScale TweenScale(this Transform self, Vector3 startScale, Vector3 endScale, float duration)
+		{
+			return new RaTweenScale(self, startScale, endScale, duration).Play();
 		}
 	}
 

@@ -5,6 +5,7 @@ using static RaTweening.RaTweenSequence;
 
 namespace RaTweening
 {
+
 	[RaTweenerElement(typeof(RaTweenerSequenceElement))]
 	public sealed class RaTweenSequence : RaTweenCore
 	{

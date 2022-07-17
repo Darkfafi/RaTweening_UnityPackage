@@ -1,5 +1,6 @@
 ﻿using RaTweening.Core;
 using System;
+using UnityEngine;
 
 namespace RaTweening
 {
@@ -21,6 +22,16 @@ namespace RaTweening
 		private CallbackHandler _onCompletedEvent;
 		private CallbackHandler _onKillEvent;
 		private LoopCallbackHandler _onLoopEvent;
+
+		#endregion
+
+		#region Editor Variables
+
+		[SerializeField, HideInInspector]
+		private int _loopsSerialized = 0;
+
+		[SerializeField, HideInInspector]
+		private float _delaySerialized = 0f;
 
 		#endregion
 
@@ -62,10 +73,7 @@ namespace RaTweening
 		public bool IsLoop => Loops != 0;
 		public bool IsInfiniteLoop => Loops == InfiniteLoopingValue;
 
-		public int Loops
-		{
-			get; private set;
-		}
+		public int Loops => _loopsSerialized;
 
 		public float TotalLoopingTime
 		{
@@ -169,11 +177,6 @@ namespace RaTweening
 
 		#region Public Methods
 
-		public RaTweenCore Play()
-		{
-			return RaTweeningCore.Instance.RegisterTween(this);
-		}
-
 		public bool Pause()
 		{
 			if(CanUseAPI() && IsPlaying)
@@ -204,84 +207,11 @@ namespace RaTweening
 			return false;
 		}
 
-		public RaTweenCore ListenToSetup(CallbackHandler callback)
-		{
-			if(CanBeModified())
-			{
-				_onSetupEvent += callback;
-			}
-			return this;
-		}
-
-		public RaTweenCore ListenToStart(CallbackHandler callback)
-		{
-			if(CanBeModified())
-			{
-				_onStartEvent += callback;
-			}
-			return this;
-		}
-
-		public RaTweenCore ListenToLoop(LoopCallbackHandler callback)
-		{
-			if(CanBeModified())
-			{
-				_onLoopEvent += callback;
-			}
-			return this;
-		}
-
-		public RaTweenCore ListenToComplete(CallbackHandler callback)
-		{
-			if(CanBeModified())
-			{
-				_onCompletedEvent += callback;
-			}
-			return this;
-		}
-
-		public RaTweenCore ListenToKill(CallbackHandler callback)
-		{
-			if(CanBeModified())
-			{
-				_onKillEvent += callback;
-			}
-			return this;
-		}
-
-		public RaTweenCore SetLooping(int loopAmount)
-		{
-			if(CanBeModified())
-			{
-				Loops = loopAmount;
-			}
-			return this;
-		}
-
-		public RaTweenCore SetInfiniteLooping()
-		{
-			return SetLooping(InfiniteLoopingValue);
-		}
-
-		public RaTweenCore DisableLooping()
-		{
-			return SetLooping(0);
-		}
-
-		public RaTweenCore SetDelay(float delay)
-		{
-			if(CanBeModified())
-			{
-				_delay.SetDuration(delay);
-			}
-			return this;
-		}
-
 		public RaTweenCore Clone()
 		{
 			RaTweenCore tween = CloneSelf();
-			tween.SetDelay(Delay);
-			tween.SetLooping(Loops);
+			tween.SetDelayInternal(_delaySerialized);
+			tween.SetLoopingInternal(_loopsSerialized);
 			return tween;
 		}
 
@@ -340,6 +270,25 @@ namespace RaTweening
 			PerformEvaluation();
 		}
 
+		internal RaTweenCore SetDelayInternal(float delay)
+		{
+			if(CanBeModified())
+			{
+				_delaySerialized = delay;
+				_delay.SetDuration(delay);
+			}
+			return this;
+		}
+
+		internal RaTweenCore SetLoopingInternal(int loopAmount)
+		{
+			if(CanBeModified())
+			{
+				_loopsSerialized = loopAmount;
+			}
+			return this;
+		}
+
 		internal void LoopInternal()
 		{
 			_loopCount++;
@@ -385,6 +334,51 @@ namespace RaTweening
 		internal void SetStateInternal(State state)
 		{
 			TweenState = state;
+		}
+
+		internal RaTweenCore OnSetupInternal(CallbackHandler callback)
+		{
+			if(CanBeModified())
+			{
+				_onSetupEvent += callback;
+			}
+			return this;
+		}
+
+		public RaTweenCore OnStartInternal(CallbackHandler callback)
+		{
+			if(CanBeModified())
+			{
+				_onStartEvent += callback;
+			}
+			return this;
+		}
+
+		internal RaTweenCore OnLoopInternal(LoopCallbackHandler callback)
+		{
+			if(CanBeModified())
+			{
+				_onLoopEvent += callback;
+			}
+			return this;
+		}
+
+		internal RaTweenCore OnCompleteInternal(CallbackHandler callback)
+		{
+			if(CanBeModified())
+			{
+				_onCompletedEvent += callback;
+			}
+			return this;
+		}
+
+		internal RaTweenCore OnKillInternal(CallbackHandler callback)
+		{
+			if(CanBeModified())
+			{
+				_onKillEvent += callback;
+			}
+			return this;
 		}
 
 		#endregion
@@ -484,5 +478,77 @@ namespace RaTweening
 		}
 
 		#endregion
+	}
+
+	public static class RaTweenCoreExtensions
+	{
+		public static TweenT Play<TweenT>(this TweenT self)
+			where TweenT : RaTweenCore
+		{
+			return RaTweeningCore.Instance.RegisterTween(self);
+		}
+
+		public static TweenT OnSetup<TweenT>(this TweenT self, RaTweenCore.CallbackHandler callback)
+			where TweenT : RaTweenCore
+		{
+			self.OnSetupInternal(callback);
+			return self;
+		}
+
+		public static TweenT OnStart<TweenT>(this TweenT self, RaTweenCore.CallbackHandler callback)
+			where TweenT : RaTweenCore
+		{
+			self.OnStartInternal(callback);
+			return self;
+		}
+
+		public static TweenT OnLoop<TweenT>(this TweenT self, RaTweenCore.LoopCallbackHandler callback)
+			where TweenT : RaTweenCore
+		{
+			self.OnLoopInternal(callback);
+			return self;
+		}
+
+		public static TweenT OnComplete<TweenT>(this TweenT self, RaTweenCore.CallbackHandler callback)
+			where TweenT : RaTweenCore
+		{
+			self.OnCompleteInternal(callback);
+			return self;
+		}
+
+		public static TweenT OnKill<TweenT>(this TweenT self, RaTweenCore.CallbackHandler callback)
+			where TweenT : RaTweenCore
+		{
+			self.OnKillInternal(callback);
+			return self;
+		}
+
+		public static TweenT SetLooping<TweenT>(this TweenT self, int loopAmount)
+			where TweenT : RaTweenCore
+		{
+			self.SetLoopingInternal(loopAmount);
+			return self;
+		}
+
+		public static TweenT SetInfiniteLooping<TweenT>(this TweenT self)
+			where TweenT : RaTweenCore
+		{
+			self.SetLoopingInternal(RaTweenCore.InfiniteLoopingValue);
+			return self;
+		}
+
+		public static TweenT DisableLooping<TweenT>(this TweenT self)
+			where TweenT : RaTweenCore
+		{
+			self.SetLoopingInternal(0);
+			return self;
+		}
+
+		public static TweenT SetDelay<TweenT>(this TweenT self, float delay)
+			where TweenT : RaTweenCore
+		{
+			self.SetDelayInternal(delay);
+			return self;
+		}
 	}
 }

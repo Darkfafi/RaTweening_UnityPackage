@@ -42,11 +42,11 @@ namespace RaTweening
 		public RaTweenCore CreateTween()
 		{
 			return CreateTweenCore()
-				.ListenToSetup(() => _onSetup?.Invoke())
-				.ListenToStart(() => _onStart?.Invoke())
-				.ListenToLoop((loopCount) => _onLoop?.Invoke())
-				.ListenToComplete(() => _onComplete?.Invoke())
-				.ListenToKill(() => _onEnd?.Invoke())
+				.OnSetup(() => _onSetup?.Invoke())
+				.OnStart(() => _onStart?.Invoke())
+				.OnLoop((loopCount) => _onLoop?.Invoke())
+				.OnComplete(() => _onComplete?.Invoke())
+				.OnKill(() => _onEnd?.Invoke())
 				.SetDelay(_delay)
 				.SetLooping(_loops);
 		}

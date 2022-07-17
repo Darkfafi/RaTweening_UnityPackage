@@ -129,7 +129,8 @@ namespace RaTweening.Core
 
 		#region Internal Methods
 
-		internal RaTweenCore RegisterTween(RaTweenCore tween)
+		internal TweenT RegisterTween<TweenT>(TweenT tween)
+			where TweenT : RaTweenCore
 		{
 			if(tween.TweenState == RaTweenCore.State.None)
 			{
@@ -140,7 +141,8 @@ namespace RaTweening.Core
 			return tween;
 		}
 
-		internal RaTweenCore UnregisterTween(RaTweenCore tween)
+		internal TweenT UnregisterTween<TweenT>(TweenT tween)
+			where TweenT : RaTweenCore
 		{
 			if(tween.TweenState != RaTweenCore.State.None)
 			{

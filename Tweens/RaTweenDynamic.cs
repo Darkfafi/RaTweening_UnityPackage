@@ -52,27 +52,26 @@ namespace RaTweening
 		#endregion
 
 		public RaTweenDynamic()
-			: this(default, default, default, default, default)
+			: base()
 		{
 
 		}
 
-		public RaTweenDynamic(TargetT target, ValueT start, ValueT end, AnimationCurve easing, bool endIsDelta = false)
-			: base(easing)
+		public RaTweenDynamic(TargetT target, ValueT start, ValueT end, float duration)
+			: base(duration)
 		{
 			_target = target;
 			_start = start;
 			_end = end;
 			_dynamicStart = false;
-			_endIsDelta = endIsDelta;
 			_endIsDelta = false;
+			_dynamicSetupStep = DynamicSetupStep.Setup;
 		}
 
-		public RaTweenDynamic(TargetT target, ValueT end, AnimationCurve easing, bool endIsDelta = false)
-			: this(target, default, end, easing, endIsDelta)
+		public RaTweenDynamic(TargetT target, ValueT end, float duration)
+			: this(target, default, end, duration)
 		{
 			_dynamicStart = true;
-			_start = default;
 		}
 
 		#region Public Methods
@@ -159,7 +158,7 @@ namespace RaTweening
 			SetStart(Target != null ? GetDynamicStart() : default);
 		}
 
-		protected override RaTweenCore CloneSelf()
+		protected override RaTween RaTweenClone()
 		{
 			RaTweenDynamic<TargetT, ValueT> clone = DynamicClone();
 			clone._target = _target;
@@ -168,7 +167,6 @@ namespace RaTweening
 			clone._endIsDelta = _endIsDelta;
 			clone._end = _end;
 			clone._dynamicSetupStep = _dynamicSetupStep;
-			clone.SetEasing(Easing);
 			return clone;
 		}
 

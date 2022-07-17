@@ -7,44 +7,78 @@ namespace RaTweening
 	{
 		#region Editor Variables
 
+		[Header("Tween Settings")]
 		[SerializeField]
-		private AnimationCurve _easing = AnimationCurve.Linear(0f, 0f, 1f, 1f);
+		private EasingType _easing = EasingType.Linear;
+		[SerializeField]
+		private float _duration = 1f;
 
-		#endregion
 
-		#region Properties
-
-		public AnimationCurve Easing => _easing;
+		[Header("Animation Curve")]
+		[SerializeField]
+		private bool _useAnimationCurve = false;
+		[SerializeField]
+		private AnimationCurve _animationCurve = AnimationCurve.Linear(0f, 0f, 1f, 1f);
+		[SerializeField]
+		private bool _useAnimationCurveDuration = false;
 
 		#endregion
 
 		public RaTween()
-			: this(AnimationCurve.Linear(0f, 0f, 1f, 1f))
-		{ 
-		}
-
-		public RaTween(AnimationCurve curve)
 			: base(0f)
 		{
-			SetEasing(curve);
+			SetDuration(_duration);
+
+			if(_useAnimationCurve)
+			{
+				SetEasing(_animationCurve, _useAnimationCurveDuration);
+			}
+			else
+			{
+				SetEasing(_easing);
+			}
+		}
+
+		public RaTween(float duration)
+			: base(duration)
+		{
+			_duration = duration;
+			_easing = EasingType.Linear;
+			_useAnimationCurve = false;
+			_useAnimationCurveDuration = false;
 		}
 
 		#region Public Methods
 
-		public RaTweenCore SetEasing(AnimationCurve easing)
+		public RaTween SetEasing(EasingType easing)
+		{
+			if(CanBeModified())
+			{
+				_easing = easing;
+				_useAnimationCurve = false;
+				_useAnimationCurveDuration = false;
+			}
+			return this;
+		}
+
+		public RaTween SetEasing(AnimationCurve easing, bool inclDuration)
 		{
 			if(CanBeModified())
 			{
 				easing = easing ?? AnimationCurve.Linear(0f, 0f, 0f, 0f);
 
-				float duration = 0f;
-				if(easing.keys.Length > 0)
+				if(_useAnimationCurveDuration = inclDuration)
 				{
-					duration = easing.keys[easing.keys.Length - 1].time;
-				}
+					_duration = 0f;
+					if(easing.keys.Length > 0)
+					{
+						_duration = easing.keys[easing.keys.Length - 1].time;
+					}
 
-				SetDuration(duration);
-				_easing = easing;
+					SetDuration(_duration);
+				}
+				_animationCurve = easing;
+				_useAnimationCurve = true;
 			}
 			return this;
 		}
@@ -53,14 +87,42 @@ namespace RaTweening
 
 		#region Protected Methods
 
+		protected abstract RaTween RaTweenClone();
+
+		protected override RaTweenCore CloneSelf()
+		{
+			RaTween tween = RaTweenClone();
+
+			tween._easing = _easing;
+			tween._animationCurve = _animationCurve;
+			tween._useAnimationCurve = _useAnimationCurve;
+			tween._useAnimationCurveDuration = _useAnimationCurveDuration;
+
+			tween.SetDuration(_duration);
+
+			if(_useAnimationCurve)
+			{
+				tween.SetEasing(_animationCurve, _useAnimationCurveDuration);
+			}
+
+			return tween;
+		}
+
 		protected override void SetDefaultValues()
 		{
-			SetEasing(AnimationCurve.Linear(0f, 0f, 1f, 1f));
+			_animationCurve = AnimationCurve.Linear(0f, 0f, 1f, 1f);
+			_easing = EasingType.Linear;
+			_duration = 1f;
 		}
 
 		protected override void PerformEvaluation()
 		{
-			Evaluate(_easing.Evaluate(Time));
+			Evaluate
+			(
+				_useAnimationCurve ? 
+				_animationCurve.Evaluate(_useAnimationCurveDuration ? Time : Progress) : 
+				RaTweenEasing.Evaluate(_easing, Progress)
+			);
 		}
 
 		#endregion

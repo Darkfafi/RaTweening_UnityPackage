@@ -53,12 +53,14 @@ namespace RaTweening.Core
 
 		#region Internal Methods
 
-		internal RaTweenCore RegisterTween(RaTweenCore tween)
+		internal TweenT RegisterTween<TweenT>(TweenT tween)
+			where TweenT : RaTweenCore
 		{
 			return _processor.RegisterTween(tween);
 		}
 
-		internal RaTweenCore UnregisterTween(RaTweenCore tween)
+		internal TweenT UnregisterTween<TweenT>(TweenT tween)
+			where TweenT : RaTweenCore
 		{
 			return _processor.UnregisterTween(tween);
 		}
