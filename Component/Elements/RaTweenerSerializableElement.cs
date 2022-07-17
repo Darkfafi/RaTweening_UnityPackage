@@ -17,22 +17,23 @@ namespace RaTweening
 		protected override void Init(Type tweenType)
 		{
 			_tween = (RaTweenCore)Activator.CreateInstance(tweenType);
-			_tween.SetDefaultValuesInternal();
 
 			// Dynamic Tween Auto Targeting
 			if(_tween is IRaTweenDynamic dynamic)
 			{
-				Type type = dynamic.GetTargetType();
+				Type type = dynamic.GetTargetTypeRaw();
 
 				if(IsOfType<GameObject>(type))
 				{
-					dynamic.SetTarget(gameObject);
+					dynamic.SetTargetRaw(gameObject);
 				}
 				else if(IsOfType<Component>(type))
 				{
-					dynamic.SetTarget(gameObject.GetComponent(type));
+					dynamic.SetTargetRaw(gameObject.GetComponent(type));
 				}
 			}
+
+			_tween.SetDefaultValuesInternal();
 		}
 
 		protected override RaTweenCore CreateTweenCore()

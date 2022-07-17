@@ -37,12 +37,12 @@ namespace RaTweening
 
 		protected TargetT Target => _target;
 
-		protected ValueT SetStart
+		protected ValueT StartValue
 		{
 			get; private set;
 		}
 
-		protected ValueT SetEnd
+		protected ValueT EndValue
 		{
 			get; private set;
 		}
@@ -52,7 +52,7 @@ namespace RaTweening
 		#endregion
 
 		public RaTweenDynamic()
-			: this(default, default, default, default)
+			: this(default, default, default, default, default)
 		{
 
 		}
@@ -77,12 +77,12 @@ namespace RaTweening
 
 		#region Public Methods
 
-		Type IRaTweenDynamic.GetTargetType()
+		Type IRaTweenDynamic.GetTargetTypeRaw()
 		{
 			return typeof(TargetT);
 		}
 
-		void IRaTweenDynamic.SetTarget(object value)
+		void IRaTweenDynamic.SetTargetRaw(object value)
 		{
 			if(value is TargetT target)
 			{
@@ -90,20 +90,31 @@ namespace RaTweening
 			}
 		}
 
-		void IRaTweenDynamic.SetStart(object value)
+		public RaTweenDynamic<TargetT, ValueT> SetTarget(TargetT target)
 		{
-			if(value is ValueT start)
+			if(CanBeModified())
+			{
+				_target = target;
+			}
+			return this;
+		}
+
+		public RaTweenDynamic<TargetT, ValueT> SetStart(ValueT start)
+		{
+			if(CanBeModified())
 			{
 				_start = start;
 			}
+			return this;
 		}
 
-		void IRaTweenDynamic.SetEnd(object value)
+		public RaTweenDynamic<TargetT, ValueT> SetEnd(ValueT end)
 		{
-			if(value is ValueT end)
+			if(CanBeModified())
 			{
-				_start = end;
+				_end = end;
 			}
+			return this;
 		}
 
 		public RaTweenDynamic<TargetT, ValueT> SetEndIsDelta(bool enabled = true)
@@ -142,6 +153,12 @@ namespace RaTweening
 		protected abstract ValueT GetDynamicStart();
 		protected abstract ValueT GetEndByDelta(ValueT start, ValueT delta);
 
+		protected override void SetDefaultValues()
+		{
+			base.SetDefaultValues();
+			SetStart(Target != null ? GetDynamicStart() : default);
+		}
+
 		protected override RaTweenCore CloneSelf()
 		{
 			RaTweenDynamic<TargetT, ValueT> clone = DynamicClone();
@@ -179,15 +196,15 @@ namespace RaTweening
 		{
 			if(_target != null)
 			{
-				DynamicEvaluation(normalizedValue, _target, SetStart, SetEnd);
+				DynamicEvaluation(normalizedValue, _target, StartValue, EndValue);
 			}
 		}
 
 		protected override void Dispose()
 		{
 			_target = default;
-			SetStart = default;
-			SetEnd = default;
+			StartValue = default;
+			EndValue = default;
 		}
 
 		protected abstract void DynamicEvaluation(float normalizedValue, TargetT target, ValueT start, ValueT end);
@@ -198,8 +215,8 @@ namespace RaTweening
 
 		private void PerformDynamicSetup()
 		{
-			SetStart = _dynamicStart ? GetDynamicStart() : _start;
-			SetEnd = _endIsDelta ? GetEndByDelta(SetStart, _end) : _end;
+			StartValue = _dynamicStart ? GetDynamicStart() : _start;
+			EndValue = _endIsDelta ? GetEndByDelta(StartValue, _end) : _end;
 		}
 
 		#endregion
@@ -217,9 +234,7 @@ namespace RaTweening
 
 	public interface IRaTweenDynamic
 	{
-		Type GetTargetType();
-		void SetTarget(object value);
-		void SetStart(object value);
-		void SetEnd(object value);
+		Type GetTargetTypeRaw();
+		void SetTargetRaw(object value);
 	}
 }
