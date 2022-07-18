@@ -115,14 +115,11 @@ namespace RaTweening
 			_duration = 1f;
 		}
 
-		protected override void PerformEvaluation()
+		protected override float CalculateEvaluation()
 		{
-			Evaluate
-			(
-				_useAnimationCurve ? 
-				_animationCurve.Evaluate(_useAnimationCurveDuration ? Time : Progress) : 
-				RaTweenEasing.Evaluate(_easing, Progress)
-			);
+			return _useAnimationCurve ?
+				_animationCurve.Evaluate(_useAnimationCurveDuration ? Time : Progress) :
+				RaTweenEasing.Evaluate(_easing, Progress);
 		}
 
 		#endregion

@@ -21,7 +21,8 @@ namespace RaTweening
 
 		private static readonly string[] Properties = new string[]
 		{
-			"_delay"
+			"_delay",
+			"_isReverse"
 		};
 
 		#endregion

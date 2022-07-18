@@ -34,7 +34,7 @@ namespace RaTweening
 		private RaTweenSequence()
 			: this(new RaTweenCore[] { })
 		{
-		
+
 		}
 
 		private RaTweenSequence(RaTweenCore[] tweens)
@@ -62,8 +62,8 @@ namespace RaTweening
 			return sequence;
 		}
 
-		public RaTweenSequence AppendTween(RaTweenCore tween, 
-			float stagger = 1f, 
+		public RaTweenSequence AppendTween(RaTweenCore tween,
+			float stagger = 1f,
 			StaggerType staggerType = StaggerType.FinalLoopExclDelay)
 		{
 			return AppendTween(tween.ToSequenceEntry(stagger, staggerType));
@@ -136,29 +136,30 @@ namespace RaTweening
 
 		protected override void Evaluate(float normalizedValue)
 		{
-			if(_headEntry.IsEmpty || _headEntry.ReadyToStartNext())
-			{
-				_index++;
-				if(_index < _sequenceEntries.Count)
-				{
-					_headEntry = _sequenceEntries[_index].Clone();
-					_processor.RegisterTween(_headEntry.Tween);
-				}
-			}
-
-			float newTime = Time;
-			float deltaTime = newTime - _time;
-			_time = newTime;
-
-			_processor.Step(deltaTime);
-		}
-
-		protected override void PerformEvaluation()
-		{
 			if(_sequenceEntries.Count > 0)
 			{
-				Evaluate(Progress);
+				if(_headEntry.IsEmpty || _headEntry.ReadyToStartNext())
+				{
+					_index++;
+					if(_index < _sequenceEntries.Count)
+					{
+						_headEntry = _sequenceEntries[_index].Clone();
+						_processor.RegisterTween(_headEntry.Tween);
+					}
+				}
+
+				float newTime = Time;
+				float deltaTime = newTime - _time;
+				_time = newTime;
+
+				_processor.Step(deltaTime);
 			}
+		}
+
+		protected override float CalculateEvaluation()
+		{
+
+			return Progress;
 		}
 
 		protected override void SetDefaultValues()
@@ -182,7 +183,7 @@ namespace RaTweening
 			for(int i = 0, c = _sequenceEntries.Count; i < c; i++)
 			{
 				var entry = _sequenceEntries[i];
-				
+
 				if(entry.Tween.IsInfiniteLoop)
 				{
 					SetInfiniteDuration();

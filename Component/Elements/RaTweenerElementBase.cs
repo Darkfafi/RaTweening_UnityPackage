@@ -18,6 +18,9 @@ namespace RaTweening
 		private float _delay = 0f;
 
 		[SerializeField, HideInInspector]
+		private bool _isReverse = false;
+
+		[SerializeField, HideInInspector]
 		private UnityEvent _onSetup = null;
 
 		[SerializeField, HideInInspector]
@@ -47,6 +50,7 @@ namespace RaTweening
 				.OnLoop((loopCount) => _onLoop?.Invoke())
 				.OnComplete(() => _onComplete?.Invoke())
 				.OnKill(() => _onEnd?.Invoke())
+				.SetReverse(_isReverse)
 				.SetDelay(_delay)
 				.SetLooping(_loops);
 		}

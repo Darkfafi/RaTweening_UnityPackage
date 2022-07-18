@@ -33,6 +33,9 @@ namespace RaTweening
 		[SerializeField, HideInInspector]
 		private float _delaySerialized = 0f;
 
+		[SerializeField, HideInInspector]
+		private bool _isReverseSerialized = false;
+
 		#endregion
 
 		#region Variables
@@ -135,6 +138,8 @@ namespace RaTweening
 			get; private set;
 		}
 
+		public bool IsReverse => _isReverseSerialized;
+
 		public bool IsPlaying
 		{
 			get
@@ -210,8 +215,9 @@ namespace RaTweening
 		public RaTweenCore Clone()
 		{
 			RaTweenCore tween = CloneSelf();
-			tween.SetDelayInternal(_delaySerialized);
-			tween.SetLoopingInternal(_loopsSerialized);
+			tween.SetDelayAPIInternal(_delaySerialized);
+			tween.SetLoopingAPIInternal(_loopsSerialized);
+			tween.SetIsReverseInternal(_isReverseSerialized);
 			return tween;
 		}
 
@@ -270,25 +276,6 @@ namespace RaTweening
 			PerformEvaluation();
 		}
 
-		internal RaTweenCore SetDelayInternal(float delay)
-		{
-			if(CanBeModified())
-			{
-				_delaySerialized = delay;
-				_delay.SetDuration(delay);
-			}
-			return this;
-		}
-
-		internal RaTweenCore SetLoopingInternal(int loopAmount)
-		{
-			if(CanBeModified())
-			{
-				_loopsSerialized = loopAmount;
-			}
-			return this;
-		}
-
 		internal void LoopInternal()
 		{
 			_loopCount++;
@@ -336,7 +323,36 @@ namespace RaTweening
 			TweenState = state;
 		}
 
-		internal RaTweenCore OnSetupInternal(CallbackHandler callback)
+		internal RaTweenCore SetIsReverseInternal(bool isreverse)
+		{
+			if(CanBeModified())
+			{
+				_isReverseSerialized = isreverse;
+			}
+
+			return this;
+		}
+
+		internal RaTweenCore SetDelayAPIInternal(float delay)
+		{
+			if(CanBeModified())
+			{
+				_delaySerialized = delay;
+				_delay.SetDuration(delay);
+			}
+			return this;
+		}
+
+		internal RaTweenCore SetLoopingAPIInternal(int loopAmount)
+		{
+			if(CanBeModified())
+			{
+				_loopsSerialized = loopAmount;
+			}
+			return this;
+		}
+
+		internal RaTweenCore OnSetupAPIInternal(CallbackHandler callback)
 		{
 			if(CanBeModified())
 			{
@@ -345,7 +361,7 @@ namespace RaTweening
 			return this;
 		}
 
-		public RaTweenCore OnStartInternal(CallbackHandler callback)
+		public RaTweenCore OnStartAPIInternal(CallbackHandler callback)
 		{
 			if(CanBeModified())
 			{
@@ -354,7 +370,7 @@ namespace RaTweening
 			return this;
 		}
 
-		internal RaTweenCore OnLoopInternal(LoopCallbackHandler callback)
+		internal RaTweenCore OnLoopAPIInternal(LoopCallbackHandler callback)
 		{
 			if(CanBeModified())
 			{
@@ -363,7 +379,7 @@ namespace RaTweening
 			return this;
 		}
 
-		internal RaTweenCore OnCompleteInternal(CallbackHandler callback)
+		internal RaTweenCore OnCompleteAPIInternal(CallbackHandler callback)
 		{
 			if(CanBeModified())
 			{
@@ -372,7 +388,7 @@ namespace RaTweening
 			return this;
 		}
 
-		internal RaTweenCore OnKillInternal(CallbackHandler callback)
+		internal RaTweenCore OnKillAPIInternal(CallbackHandler callback)
 		{
 			if(CanBeModified())
 			{
@@ -433,11 +449,29 @@ namespace RaTweening
 		protected abstract RaTweenCore CloneSelf();
 		protected abstract void Evaluate(float normalizedValue);
 		protected abstract void Dispose();
-		protected abstract void PerformEvaluation();
+		protected abstract float CalculateEvaluation();
 
 		#endregion
 
 		#region Private Methods
+
+		private void PerformEvaluation()
+		{
+			Evaluate(ApplyEvaluationMod(CalculateEvaluation()));
+		}
+
+		private float ApplyEvaluationMod(float e)
+		{
+			float returnValue = e;
+			
+			// Reverse Mod
+			if(IsReverse)
+			{
+				returnValue = 1f - returnValue;
+			}
+
+			return returnValue;
+		}
 
 		private bool CanUseAPI()
 		{
@@ -488,66 +522,73 @@ namespace RaTweening
 			return RaTweeningCore.Instance.RegisterTween(self);
 		}
 
+		public static TweenT SetReverse<TweenT>(this TweenT self, bool isReverse)
+			where TweenT : RaTweenCore
+		{
+			self.SetIsReverseInternal(isReverse);
+			return self;
+		}
+
 		public static TweenT OnSetup<TweenT>(this TweenT self, RaTweenCore.CallbackHandler callback)
 			where TweenT : RaTweenCore
 		{
-			self.OnSetupInternal(callback);
+			self.OnSetupAPIInternal(callback);
 			return self;
 		}
 
 		public static TweenT OnStart<TweenT>(this TweenT self, RaTweenCore.CallbackHandler callback)
 			where TweenT : RaTweenCore
 		{
-			self.OnStartInternal(callback);
+			self.OnStartAPIInternal(callback);
 			return self;
 		}
 
 		public static TweenT OnLoop<TweenT>(this TweenT self, RaTweenCore.LoopCallbackHandler callback)
 			where TweenT : RaTweenCore
 		{
-			self.OnLoopInternal(callback);
+			self.OnLoopAPIInternal(callback);
 			return self;
 		}
 
 		public static TweenT OnComplete<TweenT>(this TweenT self, RaTweenCore.CallbackHandler callback)
 			where TweenT : RaTweenCore
 		{
-			self.OnCompleteInternal(callback);
+			self.OnCompleteAPIInternal(callback);
 			return self;
 		}
 
 		public static TweenT OnKill<TweenT>(this TweenT self, RaTweenCore.CallbackHandler callback)
 			where TweenT : RaTweenCore
 		{
-			self.OnKillInternal(callback);
+			self.OnKillAPIInternal(callback);
 			return self;
 		}
 
 		public static TweenT SetLooping<TweenT>(this TweenT self, int loopAmount)
 			where TweenT : RaTweenCore
 		{
-			self.SetLoopingInternal(loopAmount);
+			self.SetLoopingAPIInternal(loopAmount);
 			return self;
 		}
 
 		public static TweenT SetInfiniteLooping<TweenT>(this TweenT self)
 			where TweenT : RaTweenCore
 		{
-			self.SetLoopingInternal(RaTweenCore.InfiniteLoopingValue);
+			self.SetLoopingAPIInternal(RaTweenCore.InfiniteLoopingValue);
 			return self;
 		}
 
 		public static TweenT DisableLooping<TweenT>(this TweenT self)
 			where TweenT : RaTweenCore
 		{
-			self.SetLoopingInternal(0);
+			self.SetLoopingAPIInternal(0);
 			return self;
 		}
 
 		public static TweenT SetDelay<TweenT>(this TweenT self, float delay)
 			where TweenT : RaTweenCore
 		{
-			self.SetDelayInternal(delay);
+			self.SetDelayAPIInternal(delay);
 			return self;
 		}
 	}
