@@ -417,6 +417,7 @@ namespace RaTweening
 			if(CanBeModified())
 			{
 				_process.SetDuration(duration);
+				OnSetDuration(duration);
 			}
 			return this;
 		}
@@ -434,6 +435,10 @@ namespace RaTweening
 		protected virtual void OnLoop()
 		{
 		
+		}
+
+		protected virtual void OnSetDuration(float duration)
+		{
 		}
 
 		protected virtual void OnComplete()

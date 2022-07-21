@@ -108,6 +108,11 @@ namespace RaTweening
 			return tween;
 		}
 
+		protected override void OnSetDuration(float duration)
+		{
+			_duration = duration;
+		}
+
 		protected override void SetDefaultValues()
 		{
 			_animationCurve = AnimationCurve.Linear(0f, 0f, 1f, 1f);
