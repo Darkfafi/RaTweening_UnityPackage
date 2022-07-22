@@ -1,5 +1,6 @@
 ﻿using UnityEngine;
 using RaTweening.Core;
+using RaTweening.Tools;
 
 namespace RaTweening
 {
@@ -10,29 +11,35 @@ namespace RaTweening
 
 		[Header("Tween Settings")]
 		[SerializeField]
+		[ModifierField(nameof(_useCurveEasing), true, ModifierFieldAttribute.DisableType.DontDraw)]
 		private RaEasingType _easingType = RaEasingType.Linear;
+		
 		[SerializeField]
+		[ModifierField(nameof(_useCurveEasing), false, ModifierFieldAttribute.DisableType.DontDraw)]
+		private AnimationCurve _curveEasing = AnimationCurve.Linear(0f, 0f, 1f, 1f);
+
+		[SerializeField]
+		[ModifierField(nameof(_useCurveEasingDuration), true, ModifierFieldAttribute.DisableType.DontDraw)]
 		private float _duration = 1f;
 
-		[Header("Tween Animation Curve")]
 		[SerializeField]
-		private bool _useAnimationCurveEasing = false;
-		[SerializeField]
-		private AnimationCurve _animationCurveEasing = AnimationCurve.Linear(0f, 0f, 1f, 1f);
-		[SerializeField]
-		private bool _useAnimationCurveEasingDuration = false;
+		[ModifierField(nameof(_useCurveEasing), false, ModifierFieldAttribute.DisableType.DontDraw)]
+		private bool _useCurveEasingDuration = false;
 
+		[SerializeField]
+		private bool _useCurveEasing = false;
 
 		[Header("Modifier Settings")]
 		[SerializeField]
+		[ModifierField(nameof(_useCurveModifier), true, ModifierFieldAttribute.DisableType.DontDraw)]
 		private RaModifierType _modifierType = RaModifierType.None;
 
-		[Header("Tween Modifier Curve")]
 		[SerializeField]
-		private bool _useAnimationCurveModifier = false;
-		[SerializeField]
-		private AnimationCurve _animationCurveModifier = AnimationCurve.Linear(0f, 0f, 1f, 1f);
+		[ModifierField(nameof(_useCurveModifier), false, ModifierFieldAttribute.DisableType.DontDraw)]
+		private AnimationCurve _curveModifier = AnimationCurve.Linear(0f, 0f, 1f, 1f);
 
+		[SerializeField]
+		private bool _useCurveModifier = false;
 
 		#endregion
 
@@ -41,18 +48,18 @@ namespace RaTweening
 		{
 			SetDuration(_duration);
 
-			if(_useAnimationCurveEasing)
+			if(_useCurveEasing)
 			{
-				SetEasingAPIInternal(_animationCurveEasing, _useAnimationCurveEasingDuration);
+				SetEasingAPIInternal(_curveEasing, _useCurveEasingDuration);
 			}
 			else
 			{
 				SetEasingAPIInternal(_easingType);
 			}
 
-			if(_useAnimationCurveModifier)
+			if(_useCurveModifier)
 			{
-				SetModifierAPIInternal(_animationCurveModifier);
+				SetModifierAPIInternal(_curveModifier);
 			}
 			else
 			{
@@ -65,8 +72,8 @@ namespace RaTweening
 		{
 			_duration = duration;
 			_easingType = RaEasingType.Linear;
-			_useAnimationCurveEasing = false;
-			_useAnimationCurveEasingDuration = false;
+			_useCurveEasing = false;
+			_useCurveEasingDuration = false;
 		}
 
 		#region Internal Methods
@@ -76,8 +83,8 @@ namespace RaTweening
 			if(CanBeModified())
 			{
 				_easingType = easing;
-				_useAnimationCurveEasing = false;
-				_useAnimationCurveEasingDuration = false;
+				_useCurveEasing = false;
+				_useCurveEasingDuration = false;
 			}
 			return this;
 		}
@@ -86,20 +93,19 @@ namespace RaTweening
 		{
 			if(CanBeModified())
 			{
-				easing = easing ?? AnimationCurve.Linear(0f, 0f, 0f, 0f);
+				_curveEasing = easing ?? AnimationCurve.Linear(0f, 0f, 0f, 0f);
+				_useCurveEasing = true;
 
-				if(_useAnimationCurveEasingDuration = inclDuration)
+				if(_useCurveEasingDuration = inclDuration)
 				{
 					_duration = 0f;
-					if(easing.keys.Length > 0)
+					if(_curveEasing.keys.Length > 0)
 					{
-						_duration = easing.keys[easing.keys.Length - 1].time;
+						_duration = _curveEasing.keys[_curveEasing.keys.Length - 1].time;
 					}
 
 					SetDuration(_duration);
 				}
-				_animationCurveEasing = easing;
-				_useAnimationCurveEasing = true;
 			}
 			return this;
 		}
@@ -114,7 +120,7 @@ namespace RaTweening
 			if(CanBeModified())
 			{
 				_modifierType = modifier;
-				_useAnimationCurveModifier = false;
+				_useCurveModifier = false;
 			}
 			return this;
 		}
@@ -124,8 +130,8 @@ namespace RaTweening
 			if(CanBeModified())
 			{
 				modifier = modifier ?? AnimationCurve.Linear(0f, 0f, 0f, 0f);
-				_animationCurveModifier = modifier;
-				_useAnimationCurveModifier = true;
+				_curveModifier = modifier;
+				_useCurveModifier = true;
 			}
 			return this;
 		}
@@ -142,22 +148,22 @@ namespace RaTweening
 
 			// Easing
 			tween._easingType = _easingType;
-			tween._animationCurveEasing = _animationCurveEasing;
-			tween._useAnimationCurveEasing = _useAnimationCurveEasing;
-			tween._useAnimationCurveEasingDuration = _useAnimationCurveEasingDuration;
+			tween._curveEasing = _curveEasing;
+			tween._useCurveEasing = _useCurveEasing;
+			tween._useCurveEasingDuration = _useCurveEasingDuration;
 
 			// Modifier
 			tween._modifierType = _modifierType;
-			tween._animationCurveModifier = _animationCurveModifier;
-			tween._useAnimationCurveModifier = _useAnimationCurveModifier;
+			tween._curveModifier = _curveModifier;
+			tween._useCurveModifier = _useCurveModifier;
 
 			// Generic
 			tween.SetDuration(_duration);
 
 			// Post Easing
-			if(_useAnimationCurveEasing)
+			if(tween._useCurveEasing)
 			{
-				tween.SetEasingAPIInternal(_animationCurveEasing, _useAnimationCurveEasingDuration);
+				tween.SetEasingAPIInternal(_curveEasing, _useCurveEasingDuration);
 			}
 
 			return tween;
@@ -170,7 +176,7 @@ namespace RaTweening
 
 		protected override void SetDefaultValues()
 		{
-			_animationCurveModifier = AnimationCurve.Linear(0f, 0f, 1f, 1f);
+			_curveModifier = AnimationCurve.Linear(0f, 0f, 1f, 1f);
 			_easingType = RaEasingType.Linear;
 			_duration = 1f;
 		}
@@ -178,9 +184,9 @@ namespace RaTweening
 		protected override float CalculateEvaluation()
 		{
 			float modifiedProgress = ApplyEvaluationModifier(Progress);
-			if(_useAnimationCurveEasing)
+			if(_useCurveEasing)
 			{
-				return _animationCurveModifier.Evaluate(_useAnimationCurveEasingDuration ? modifiedProgress * Duration : modifiedProgress);
+				return _curveEasing.Evaluate(_useCurveEasingDuration ? modifiedProgress * Duration : modifiedProgress);
 			}
 			else
 			{
@@ -190,9 +196,9 @@ namespace RaTweening
 
 		protected float ApplyEvaluationModifier(float value)
 		{
-			if(_useAnimationCurveModifier)
+			if(_useCurveModifier)
 			{
-				return _animationCurveModifier.Evaluate(value);
+				return _curveModifier.Evaluate(value);
 			}
 			else
 			{

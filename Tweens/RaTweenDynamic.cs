@@ -1,4 +1,5 @@
-﻿using System;
+﻿using RaTweening.Tools;
+using System;
 using UnityEngine;
 
 namespace RaTweening
@@ -13,9 +14,11 @@ namespace RaTweening
 		private TargetT _target = default;
 
 		[SerializeField]
+		[ModifierField(nameof(_dynamicStart), true, ModifierFieldAttribute.DisableType.DontDraw)]
 		private ValueT _start = default;
 
 		[SerializeField]
+		[ModifierField(nameof(_endIsDelta), true, "Delta")]
 		private ValueT _end = default;
 
 		[Header("Dynamic")]

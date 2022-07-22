@@ -8,7 +8,7 @@ namespace RaTweening
 		#region Editor Variables
 
 		[SerializeReference, HideInInspector]
-		private RaTweenerElementBase _tweenElement = null;
+		private RaTweenerElementBase _tweenElement = null; 
 
 		[Header("Options")]
 		[SerializeField]
