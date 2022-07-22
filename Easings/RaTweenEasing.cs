@@ -1,6 +1,6 @@
 ﻿using UnityEngine;
 
-namespace RaTweening
+namespace RaTweening.Core
 {
 	public static partial class RaTweenEasing
 	{
@@ -19,56 +19,56 @@ namespace RaTweening
 
 		#region Public Methods
 
-		public static float Evaluate(EasingType easing, float x)
+		public static float Evaluate(RaEasingType easingType, float x)
 		{
-			switch(easing)
+			switch(easingType)
 			{
 				// Sine
-				case EasingType.InSine:
+				case RaEasingType.InSine:
 					return 1f - Mathf.Cos((x * Mathf.PI) / 2f);
-				case EasingType.OutSine:
+				case RaEasingType.OutSine:
 					return Mathf.Sin((x * Mathf.PI) / 2f);
-				case EasingType.InOutSine:
+				case RaEasingType.InOutSine:
 					return -(Mathf.Cos(Mathf.PI * x) - 1f) / 2f;
 
 				// Quad
-				case EasingType.InQuad:
+				case RaEasingType.InQuad:
 					return x * x;
-				case EasingType.OutQuad:
+				case RaEasingType.OutQuad:
 					return 1f - (1f - x) * (1f - x);
-				case EasingType.InOutQuad:
+				case RaEasingType.InOutQuad:
 					return x < 0.5f ? 2f * x * x : 1f - Mathf.Pow(-2f * x + 2f, 2f) / 2f;
 
 				// Cubic
-				case EasingType.InCubic:
+				case RaEasingType.InCubic:
 					return x * x * x;
-				case EasingType.OutCubic:
+				case RaEasingType.OutCubic:
 					return 1f - Mathf.Pow(1f - x, 3f);
-				case EasingType.InOutCubic:
+				case RaEasingType.InOutCubic:
 					return x < 0.5f ? 4f * x * x * x : 1f - Mathf.Pow(-2f * x + 2f, 3f) / 2f;
 
 				// Quart
-				case EasingType.InQuart:
+				case RaEasingType.InQuart:
 					return x * x * x * x;
-				case EasingType.OutQuart:
+				case RaEasingType.OutQuart:
 					return 1f - Mathf.Pow(1f - x, 4f);
-				case EasingType.InOutQuart:
+				case RaEasingType.InOutQuart:
 					return x < 0.5f ? 8f * x * x * x * x : 1f - Mathf.Pow(-2f * x + 2f, 4f) / 2f;
 
 				// Quint
-				case EasingType.InQuint:
+				case RaEasingType.InQuint:
 					return x * x * x * x * x;
-				case EasingType.OutQuint:
+				case RaEasingType.OutQuint:
 					return 1f - Mathf.Pow(1f - x, 5f);
-				case EasingType.InOutQuint:
+				case RaEasingType.InOutQuint:
 					return x < 0.5f ? 16f * x * x * x * x * x : 1f - Mathf.Pow(-2f * x + 2f, 6f) / 2f;
 
 				// Expo
-				case EasingType.InExpo:
+				case RaEasingType.InExpo:
 					return Mathf.Approximately(x, 0f) ? 0f : Mathf.Pow(2f, 10f * x - 10f);
-				case EasingType.OutExpo:
+				case RaEasingType.OutExpo:
 					return Mathf.Approximately(x, 1f) ? 1f : 1f - Mathf.Pow(2f, -10f * x);
-				case EasingType.InOutExpo:
+				case RaEasingType.InOutExpo:
 					return Mathf.Approximately(x, 0f)
 						  ? 0f
 						  : Mathf.Approximately(x, 1f)
@@ -77,38 +77,38 @@ namespace RaTweening
 						  : (2f - Mathf.Pow(2f, -20f * x + 10f)) / 2f;
 
 				// Circ
-				case EasingType.InCirc:
+				case RaEasingType.InCirc:
 					return 1f - Mathf.Sqrt(1f - Mathf.Pow(x, 2f));
-				case EasingType.OutCirc:
+				case RaEasingType.OutCirc:
 					return Mathf.Sqrt(1f - Mathf.Pow(x - 1f, 2f));
-				case EasingType.InOutCirc:
+				case RaEasingType.InOutCirc:
 					return x < 0.5f
 						  ? (1f - Mathf.Sqrt(1f - Mathf.Pow(2f * x, 2f))) / 2f
 						  : (Mathf.Sqrt(1f - Mathf.Pow(-2f * x + 2f, 2f)) + 1f) / 2f;
 				// Back
-				case EasingType.InBack:
+				case RaEasingType.InBack:
 					return C3 * x * x * x - C1 * x * x;
-				case EasingType.OutBack:
+				case RaEasingType.OutBack:
 					return 1f + C3 * Mathf.Pow(x - 1f, 3f) + C1 * Mathf.Pow(x - 1f, 2f);
-				case EasingType.InOutBack:
+				case RaEasingType.InOutBack:
 					return x < 0.5f
 						  ? (Mathf.Pow(2f * x, 2f) * ((C2 + 1f) * 2f * x - C2)) / 2f
 						  : (Mathf.Pow(2f * x - 2f, 2f) * ((C2 + 1f) * (x * 2f - 2f) + C2) + 2f) / 2f;
 
 				// Elastic
-				case EasingType.InElastic:
+				case RaEasingType.InElastic:
 					return Mathf.Approximately(x, 0f)
 						  ? 0f
 						  : Mathf.Approximately(x, 1f)
 						  ? 1f
 						  : -Mathf.Pow(2f, 10f * x - 10f) * Mathf.Sin((x * 10f - 10.75f) * C4);
-				case EasingType.OutElastic:
+				case RaEasingType.OutElastic:
 					return Mathf.Approximately(x, 0f)
 						  ? 0f
 						  : Mathf.Approximately(x, 1f)
 						  ? 1f
 						  : Mathf.Pow(2f, -10f * x) * Mathf.Sin((x * 10f - 0.75f) * C4) + 1f;
-				case EasingType.InOutElastic:
+				case RaEasingType.InOutElastic:
 					return Mathf.Approximately(x, 0f)
 						  ? 0f
 						  : Mathf.Approximately(x, 1f)
@@ -118,19 +118,22 @@ namespace RaTweening
 						  : (Mathf.Pow(2f, -20f * x + 10f) * Mathf.Sin((20f * x - 11.125f) * C5)) / 2f + 1f;
 
 				// Bounce
-				case EasingType.InBounce:
+				case RaEasingType.InBounce:
 					return 1f - OutBounce(1f - x);
-				case EasingType.OutBounce:
+				case RaEasingType.OutBounce:
 					return OutBounce(x);
-				case EasingType.InOutBounce:
+				case RaEasingType.InOutBounce:
 					return x < 0.5f
 						  ? (1f - OutBounce(1f - 2f * x)) / 2f
 						  : (1f + OutBounce(2f * x - 1f)) / 2f;
 
 				// Default
-				case EasingType.Linear:
-				default:
+				case RaEasingType.Linear:
 					return x;
+
+				// Not Implemented Exception
+				default:
+					throw new System.NotImplementedException($"{nameof(RaEasingType)} {easingType} not implemented");
 			}
 
 			float OutBounce(float v)

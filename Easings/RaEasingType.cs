@@ -1,6 +1,6 @@
 ﻿namespace RaTweening
 {
-	public enum EasingType
+	public enum RaEasingType
 	{
 		// Default
 		Linear = 0,

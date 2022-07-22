@@ -33,9 +33,6 @@ namespace RaTweening
 		[SerializeField, HideInInspector]
 		private float _delaySerialized = 0f;
 
-		[SerializeField, HideInInspector]
-		private bool _isReverseSerialized = false;
-
 		#endregion
 
 		#region Variables
@@ -138,8 +135,6 @@ namespace RaTweening
 			get; private set;
 		}
 
-		public bool IsReverse => _isReverseSerialized;
-
 		public bool IsPlaying
 		{
 			get
@@ -217,7 +212,6 @@ namespace RaTweening
 			RaTweenCore tween = CloneSelf();
 			tween.SetDelayAPIInternal(_delaySerialized);
 			tween.SetLoopingAPIInternal(_loopsSerialized);
-			tween.SetIsReverseInternal(_isReverseSerialized);
 			return tween;
 		}
 
@@ -321,16 +315,6 @@ namespace RaTweening
 		internal void SetStateInternal(State state)
 		{
 			TweenState = state;
-		}
-
-		internal RaTweenCore SetIsReverseInternal(bool isreverse)
-		{
-			if(CanBeModified())
-			{
-				_isReverseSerialized = isreverse;
-			}
-
-			return this;
 		}
 
 		internal RaTweenCore SetDelayAPIInternal(float delay)
@@ -462,20 +446,7 @@ namespace RaTweening
 
 		private void PerformEvaluation()
 		{
-			Evaluate(ApplyEvaluationMod(CalculateEvaluation()));
-		}
-
-		private float ApplyEvaluationMod(float e)
-		{
-			float returnValue = e;
-			
-			// Reverse Mod
-			if(IsReverse)
-			{
-				returnValue = 1f - returnValue;
-			}
-
-			return returnValue;
+			Evaluate(CalculateEvaluation());
 		}
 
 		private bool CanUseAPI()
@@ -525,13 +496,6 @@ namespace RaTweening
 			where TweenT : RaTweenCore
 		{
 			return RaTweeningCore.Instance.RegisterTween(self);
-		}
-
-		public static TweenT SetReverse<TweenT>(this TweenT self, bool isReverse)
-			where TweenT : RaTweenCore
-		{
-			self.SetIsReverseInternal(isReverse);
-			return self;
 		}
 
 		public static TweenT OnSetup<TweenT>(this TweenT self, RaTweenCore.CallbackHandler callback)

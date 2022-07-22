@@ -143,8 +143,7 @@ namespace RaTweening
 					_index++;
 					if(_index < _sequenceEntries.Count)
 					{
-						int currentIndex = IsReverse ? _sequenceEntries.Count - 1 - _index : _index;
-						_headEntry = _sequenceEntries[currentIndex].Clone();
+						_headEntry = _sequenceEntries[_index].Clone();
 						_processor.RegisterTween(_headEntry.Tween);
 					}
 				}
