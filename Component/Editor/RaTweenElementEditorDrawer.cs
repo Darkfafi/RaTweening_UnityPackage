@@ -119,7 +119,6 @@ namespace RaTweening
 								_loopsProperty.intValue = 0;
 							}
 						}
-
 						break;
 				}
 			}

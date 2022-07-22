@@ -4,7 +4,7 @@ using UnityEngine;
 namespace RaTweening
 {
 	[Serializable]
-	public class RaTweenRotation : RaTweenDynamic<Transform, Vector3>
+	public class RaTweenRotation : RaTweenDynamic<Transform, Transform, Vector3>
 	{
 		public RaTweenRotation()
 			: base()
@@ -26,24 +26,34 @@ namespace RaTweening
 
 		#region Protected Methods
 
-		protected override Vector3 GetDynamicStart()
-		{
-			return Target.rotation.eulerAngles;
-		}
-
-		protected override Vector3 GetEndByDelta(Vector3 start, Vector3 delta)
-		{
-			return start + delta;
-		}
-
 		protected override void DynamicEvaluation(float normalizedValue, Transform target, Vector3 start, Vector3 end)
 		{
 			target.rotation = Quaternion.SlerpUnclamped(Quaternion.Euler(start), Quaternion.Euler(end), normalizedValue);
 		}
 
-		protected override RaTweenDynamic<Transform, Vector3, Vector3> DynamicClone()
+		protected override RaTweenDynamic<Transform, Transform, Vector3> DynamicClone()
 		{
 			return new RaTweenRotation();
+		}
+
+		protected override Vector3 GetStartFromRef(Transform reference)
+		{
+			return reference.rotation.eulerAngles;
+		}
+
+		protected override Vector3 GetDynamicStart(Transform target)
+		{
+			return target.rotation.eulerAngles;
+		}
+
+		protected override Vector3 GetEndFromRef(Transform reference)
+		{
+			return reference.rotation.eulerAngles;
+		}
+
+		protected override Vector3 GetEndByDelta(Vector3 start, Vector3 delta)
+		{
+			return start + delta;
 		}
 
 		#endregion

@@ -1,5 +1,7 @@
 ﻿using UnityEditor;
 using UnityEngine;
+using System.Reflection;
+using System.Collections.Generic;
 
 namespace RaTweening.Tools
 {
@@ -21,7 +23,7 @@ namespace RaTweening.Tools
 
 		public override float GetPropertyHeight(SerializedProperty property, GUIContent label)
 		{
-			if(ApplyModification(property) && _conditionalAttr.DisablingType == ModifierFieldAttribute.DisableType.DontDraw)
+			if(ApplyModification(property) && _conditionalAttr.ModificationType == ModifierFieldAttribute.ModType.DontDraw)
 			{
 				return 0f;
 			}
@@ -36,34 +38,56 @@ namespace RaTweening.Tools
 		private bool ApplyModification(SerializedProperty property)
 		{
 			_conditionalAttr = attribute as ModifierFieldAttribute;
-			// Replace propertyname to the value from the parameter
-			string path = property.propertyPath.Contains(".") ? System.IO.Path.ChangeExtension(property.propertyPath, _conditionalAttr.ComparedPropertyName) : _conditionalAttr.ComparedPropertyName;
 
-			_comparedField = property.serializedObject.FindProperty(path);
-
-			if(_comparedField == null)
+			int count = 0;
+			for(int i = 0; i < _conditionalAttr.ComparedPropertyNames.Length; i++)
 			{
-				Debug.LogError("Cannot find property with name: " + path);
-				return false;
+				string comparedPropertyName = _conditionalAttr.ComparedPropertyNames[i];
+				object comparedValue = _conditionalAttr.ComparedValues[i];
+
+				// Replace propertyname to the value from the parameter
+				string path = property.propertyPath.Contains(".") ? System.IO.Path.ChangeExtension(property.propertyPath, comparedPropertyName) : comparedPropertyName;
+
+				_comparedField = property.serializedObject.FindProperty(path);
+
+				if(_comparedField == null)
+				{
+					Debug.LogError("Cannot find property with name: " + path);
+					return false;
+				}
+
+				bool condition = false;
+				// get the value & compare based on types
+				switch(_comparedField.type)
+				{ // Possible extend cases to support your own type
+					case "bool":
+						condition = _comparedField.boolValue.Equals(comparedValue);
+						break;
+					case "Enum":
+						condition = _comparedField.enumValueIndex.Equals((int)comparedValue);
+						break;
+					default:
+						Debug.LogError("Error: " + _comparedField.type + " is not supported of " + path);
+						break;
+				}
+
+				if(condition)
+				{
+					count++;
+				}
 			}
 
-			bool value;
-
-			// get the value & compare based on types
-			switch(_comparedField.type)
-			{ // Possible extend cases to support your own type
-				case "bool":
-					value = _comparedField.boolValue.Equals(_conditionalAttr.ComparedValue);
-					break;
-				case "Enum":
-					value = _comparedField.enumValueIndex.Equals((int)_conditionalAttr.ComparedValue);
-					break;
+			switch(_conditionalAttr.ConditionType)
+			{
+				case ModifierFieldAttribute.RaConditionType.All:
+					return count == _conditionalAttr.ComparedPropertyNames.Length;
+				case ModifierFieldAttribute.RaConditionType.Any:
+					return count > 0;
+				case ModifierFieldAttribute.RaConditionType.None:
+					return count == 0;
 				default:
-					Debug.LogError("Error: " + _comparedField.type + " is not supported of " + path);
-					return true;
+					return false;
 			}
-
-			return _conditionalAttr.ReverseCondition ? !value : value;
 		}
 
 		public override void OnGUI(Rect position, SerializedProperty property, GUIContent label)
@@ -71,17 +95,17 @@ namespace RaTweening.Tools
 			// If the condition is met, simply draw the field.
 			if(ApplyModification(property))
 			{
-				switch(_conditionalAttr.DisablingType)
+				switch(_conditionalAttr.ModificationType)
 				{
-					case ModifierFieldAttribute.DisableType.ReadOnly:
+					case ModifierFieldAttribute.ModType.ReadOnly:
 						GUI.enabled = false;
 						EditorGUI.PropertyField(position, property);
 						GUI.enabled = true;
 						break;
-					case ModifierFieldAttribute.DisableType.Rename:
+					case ModifierFieldAttribute.ModType.Rename:
 						EditorGUI.PropertyField(position, property, new GUIContent(_conditionalAttr.Rename));
 						break;
-					case ModifierFieldAttribute.DisableType.DontDraw:
+					case ModifierFieldAttribute.ModType.DontDraw:
 						// Don't Draw
 						break;
 				}
@@ -91,6 +115,5 @@ namespace RaTweening.Tools
 				EditorGUI.PropertyField(position, property);
 			}
 		}
-
 	}
 }

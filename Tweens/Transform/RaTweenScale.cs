@@ -3,7 +3,7 @@ using UnityEngine;
 
 namespace RaTweening
 {
-	public class RaTweenScale : RaTweenDynamic<Transform, Vector3>
+	public class RaTweenScale : RaTweenDynamic<Transform, Transform, Vector3>
 	{
 		public RaTweenScale()
 			: base()
@@ -28,18 +28,8 @@ namespace RaTweening
 		protected override void SetDefaultValues()
 		{
 			base.SetDefaultValues();
-			SetStart(Target != null ? GetDynamicStart() : Vector3.one);
-			SetEnd(Vector3.one);
-		}
-
-		protected override Vector3 GetDynamicStart()
-		{
-			return Target.localScale;
-		}
-
-		protected override Vector3 GetEndByDelta(Vector3 start, Vector3 delta)
-		{
-			return start + delta;
+			SetStartValue(Target != null ? GetDynamicStart(Target) : Vector3.one);
+			SetEndValue(Vector3.one);
 		}
 
 		protected override void DynamicEvaluation(float normalizedValue, Transform target, Vector3 start, Vector3 end)
@@ -48,9 +38,29 @@ namespace RaTweening
 			target.localScale = start + (delta * normalizedValue);
 		}
 
-		protected override RaTweenDynamic<Transform, Vector3, Vector3> DynamicClone()
+		protected override RaTweenDynamic<Transform, Transform, Vector3> DynamicClone()
 		{
 			return new RaTweenScale();
+		}
+
+		protected override Vector3 GetStartFromRef(Transform reference)
+		{
+			return reference.localScale;
+		}
+
+		protected override Vector3 GetDynamicStart(Transform target)
+		{
+			return target.localScale;
+		}
+
+		protected override Vector3 GetEndFromRef(Transform reference)
+		{
+			return reference.localScale;
+		}
+
+		protected override Vector3 GetEndByDelta(Vector3 start, Vector3 delta)
+		{
+			return start + delta;
 		}
 
 		#endregion

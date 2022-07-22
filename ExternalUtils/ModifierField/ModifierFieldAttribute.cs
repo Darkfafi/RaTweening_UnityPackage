@@ -12,17 +12,17 @@ namespace RaTweening.Tools
 	{
 		#region Properties
 
-		public string ComparedPropertyName
+		public string[] ComparedPropertyNames
 		{
 			get; private set;
 		}
 
-		public object ComparedValue
+		public object[] ComparedValues
 		{
 			get; private set;
 		}
 
-		public DisableType DisablingType
+		public ModType ModificationType
 		{
 			get; private set;
 		}
@@ -32,7 +32,7 @@ namespace RaTweening.Tools
 			get; private set;
 		}
 
-		public bool ReverseCondition
+		public RaConditionType ConditionType
 		{
 			get; private set;
 		}
@@ -40,30 +40,45 @@ namespace RaTweening.Tools
 		/// <summary>
 		/// Types of comperisons.
 		/// </summary>
-		public enum DisableType
+		public enum ModType
 		{
-			ReadOnly = 2,
-			DontDraw = 3,
-			Rename = 4,
+			Rename = 1,
+			ReadOnly = 10,
+			DontDraw = 100,
 		}
 
 		#endregion
 
-		public ModifierFieldAttribute(string comparedPropertyName, object comparedValue, DisableType disablingType = DisableType.DontDraw, bool reverseCondition = false)
+		public ModifierFieldAttribute(string[] comparedPropertyNames, object[] comparedValues, ModType disablingType = ModType.DontDraw, RaConditionType conditionType = RaConditionType.Any)
 		{
-			ComparedPropertyName = comparedPropertyName;
-			ComparedValue = comparedValue;
-			DisablingType = disablingType;
-			ReverseCondition = reverseCondition;
+			ComparedPropertyNames = comparedPropertyNames;
+			ComparedValues = comparedValues;
+			ModificationType = disablingType;
+			ConditionType = conditionType;
 		}
 
-		public ModifierFieldAttribute(string comparedPropertyName, object comparedValue, string rename, bool reverseCondition = false)
+		public ModifierFieldAttribute(string comparedPropertyName, object comparedValue, ModType disablingType = ModType.DontDraw, RaConditionType conditionType = RaConditionType.Any)
 		{
-			ComparedPropertyName = comparedPropertyName;
-			ComparedValue = comparedValue;
-			DisablingType = DisableType.Rename;
-			Rename = rename;
-			ReverseCondition = reverseCondition;
+			ComparedPropertyNames	= new string[] { comparedPropertyName };
+			ComparedValues			= new object[] { comparedValue };
+			ModificationType		= disablingType;
+			ConditionType			= conditionType;
+		}
+
+		public ModifierFieldAttribute(string comparedPropertyName, object comparedValue, string rename, RaConditionType conditionType = RaConditionType.Any)
+		{
+			ComparedPropertyNames	= new string[] { comparedPropertyName };
+			ComparedValues			= new object[] { comparedValue };
+			ModificationType		= ModType.Rename;
+			Rename					= rename;
+			ConditionType			= conditionType;
+		}
+
+		public enum RaConditionType
+		{
+			Any,
+			All,
+			None
 		}
 	}
 }

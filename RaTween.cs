@@ -11,19 +11,19 @@ namespace RaTweening
 
 		[Header("Tween Settings")]
 		[SerializeField]
-		[ModifierField(nameof(_useCurveEasing), true, ModifierFieldAttribute.DisableType.DontDraw)]
+		[ModifierField(nameof(_useCurveEasing), true, ModifierFieldAttribute.ModType.DontDraw)]
 		private RaEasingType _easingType = RaEasingType.Linear;
 		
 		[SerializeField]
-		[ModifierField(nameof(_useCurveEasing), false, ModifierFieldAttribute.DisableType.DontDraw)]
+		[ModifierField(nameof(_useCurveEasing), false, ModifierFieldAttribute.ModType.DontDraw)]
 		private AnimationCurve _curveEasing = AnimationCurve.Linear(0f, 0f, 1f, 1f);
 
 		[SerializeField]
-		[ModifierField(nameof(_useCurveEasingDuration), true, ModifierFieldAttribute.DisableType.DontDraw)]
+		[ModifierField(nameof(_useCurveEasingDuration), true, ModifierFieldAttribute.ModType.DontDraw)]
 		private float _duration = 1f;
 
 		[SerializeField]
-		[ModifierField(nameof(_useCurveEasing), false, ModifierFieldAttribute.DisableType.DontDraw)]
+		[ModifierField(nameof(_useCurveEasing), false, ModifierFieldAttribute.ModType.DontDraw)]
 		private bool _useCurveEasingDuration = false;
 
 		[SerializeField]
@@ -31,11 +31,11 @@ namespace RaTweening
 
 		[Header("Modifier Settings")]
 		[SerializeField]
-		[ModifierField(nameof(_useCurveModifier), true, ModifierFieldAttribute.DisableType.DontDraw)]
+		[ModifierField(nameof(_useCurveModifier), true, ModifierFieldAttribute.ModType.DontDraw)]
 		private RaModifierType _modifierType = RaModifierType.None;
 
 		[SerializeField]
-		[ModifierField(nameof(_useCurveModifier), false, ModifierFieldAttribute.DisableType.DontDraw)]
+		[ModifierField(nameof(_useCurveModifier), false, ModifierFieldAttribute.ModType.DontDraw)]
 		private AnimationCurve _curveModifier = AnimationCurve.Linear(0f, 0f, 1f, 1f);
 
 		[SerializeField]

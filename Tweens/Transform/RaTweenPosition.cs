@@ -4,7 +4,7 @@ using UnityEngine;
 namespace RaTweening
 {
 	[Serializable]
-	public class RaTweenPosition : RaTweenDynamic<Transform, Vector3>
+	public class RaTweenPosition : RaTweenDynamic<Transform, Transform, Vector3>
 	{
 		public RaTweenPosition()
 			: base()
@@ -26,14 +26,9 @@ namespace RaTweening
 
 		#region Protected Methods
 
-		protected override Vector3 GetDynamicStart()
+		protected override RaTweenDynamic<Transform, Transform, Vector3> DynamicClone()
 		{
-			return Target.position;
-		}
-
-		protected override Vector3 GetEndByDelta(Vector3 start, Vector3 delta)
-		{
-			return start + delta;
+			return new RaTweenPosition();
 		}
 
 		protected override void DynamicEvaluation(float normalizedValue, Transform target, Vector3 start, Vector3 end)
@@ -42,9 +37,24 @@ namespace RaTweening
 			target.position = start + (delta * normalizedValue);
 		}
 
-		protected override RaTweenDynamic<Transform, Vector3, Vector3> DynamicClone()
+		protected override Vector3 GetStartFromRef(Transform reference)
 		{
-			return new RaTweenPosition();
+			return reference.position;
+		}
+
+		protected override Vector3 GetDynamicStart(Transform target)
+		{
+			return target.position;
+		}
+
+		protected override Vector3 GetEndFromRef(Transform reference)
+		{
+			return reference.position;
+		}
+
+		protected override Vector3 GetEndByDelta(Vector3 start, Vector3 delta)
+		{
+			return start + delta;
 		}
 
 		#endregion
