@@ -48,7 +48,7 @@ namespace RaTweening
 			target.localScale = start + (delta * normalizedValue);
 		}
 
-		protected override RaTweenDynamic<Transform, Vector3> DynamicClone()
+		protected override RaTweenDynamic<Transform, Vector3, Vector3> DynamicClone()
 		{
 			return new RaTweenScale();
 		}
