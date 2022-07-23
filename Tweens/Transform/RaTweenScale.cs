@@ -1,9 +1,8 @@
-﻿using System;
-using UnityEngine;
+﻿using UnityEngine;
 
 namespace RaTweening
 {
-	public class RaTweenScale : RaTweenDynamic<Transform, Transform, Vector3>
+	public class RaTweenScale : RaTweenDynamic<Transform, Vector3>
 	{
 		public RaTweenScale()
 			: base()
@@ -23,12 +22,23 @@ namespace RaTweening
 
 		}
 
+		public RaTweenScale(Transform target, Vector3 startScale, Transform endScale, float duration)
+		   : base(target, startScale, default, duration)
+		{
+			SetEndRef(endScale);
+		}
+
 		#region Protected Methods
+
+		protected override RaTweenDynamic<Transform, Vector3> DynamicClone()
+		{
+			return new RaTweenScale();
+		}
 
 		protected override void SetDefaultValues()
 		{
 			base.SetDefaultValues();
-			SetStartValue(Target != null ? GetDynamicStart(Target) : Vector3.one);
+			SetStartValue(Target != null ? ReadValue(Target) : Vector3.one);
 			SetEndValue(Vector3.one);
 		}
 
@@ -38,22 +48,7 @@ namespace RaTweening
 			target.localScale = start + (delta * normalizedValue);
 		}
 
-		protected override RaTweenDynamic<Transform, Transform, Vector3> DynamicClone()
-		{
-			return new RaTweenScale();
-		}
-
-		protected override Vector3 GetStartFromRef(Transform reference)
-		{
-			return reference.localScale;
-		}
-
-		protected override Vector3 GetDynamicStart(Transform target)
-		{
-			return target.localScale;
-		}
-
-		protected override Vector3 GetEndFromRef(Transform reference)
+		protected override Vector3 ReadValue(Transform reference)
 		{
 			return reference.localScale;
 		}
@@ -102,6 +97,11 @@ namespace RaTweening
 		}
 
 		public static RaTweenScale TweenScale(this Transform self, Vector3 startScale, Vector3 endScale, float duration)
+		{
+			return new RaTweenScale(self, startScale, endScale, duration).Play();
+		}
+
+		public static RaTweenScale TweenScale(this Transform self, Vector3 startScale, Transform endScale, float duration)
 		{
 			return new RaTweenScale(self, startScale, endScale, duration).Play();
 		}

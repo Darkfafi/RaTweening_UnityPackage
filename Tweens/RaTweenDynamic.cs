@@ -5,7 +5,7 @@ using UnityEngine;
 namespace RaTweening
 {
 	[Serializable]
-	public abstract class RaTweenDynamic<TargetT, ValueTRef, ValueT> : RaTween, IRaTweenDynamic
+	public abstract class RaTweenDynamic<TargetT, ValueT> : RaTween, IRaTweenDynamic
 	{
 		#region Editor Variables
 
@@ -16,7 +16,7 @@ namespace RaTweening
 		// Start
 		[SerializeField]
 		[ModifierField(new string[] { nameof(_useStartRef), nameof(_dynamicStart) }, new object[] { false, true }, ModifierFieldAttribute.ModType.DontDraw, ModifierFieldAttribute.RaConditionType.Any)]
-		private ValueTRef _startRef = default;
+		private TargetT _startRef = default;
 
 		[SerializeField]
 		[ModifierField(new string[] { nameof(_useStartRef), nameof(_dynamicStart) }, new object[] { true, true }, ModifierFieldAttribute.ModType.DontDraw, ModifierFieldAttribute.RaConditionType.Any)]
@@ -32,7 +32,7 @@ namespace RaTweening
 		// End
 		[SerializeField]
 		[ModifierField(nameof(_useEndRef), false, ModifierFieldAttribute.ModType.DontDraw)]
-		private ValueTRef _endRef = default;
+		private TargetT _endRef = default;
 		
 		[SerializeField]
 		[ModifierField(nameof(_useEndRef), true, ModifierFieldAttribute.ModType.DontDraw)]
@@ -47,7 +47,7 @@ namespace RaTweening
 
 		[SerializeField]
 		[Tooltip("The Step when to calculate the dynamic values")]
-		private DynamicSetupStep _dynamicSetupStep = DynamicSetupStep.Setup;
+		private RaTweenDynamicSetupStep _dynamicSetupStep = RaTweenDynamicSetupStep.Setup;
 
 		#endregion
 
@@ -81,7 +81,7 @@ namespace RaTweening
 			_target = target;
 			SetStartValue(start);
 			SetEndValue(end);
-			_dynamicSetupStep = DynamicSetupStep.Setup;
+			_dynamicSetupStep = RaTweenDynamicSetupStep.Setup;
 		}
 
 		public RaTweenDynamic(TargetT target, ValueT end, float duration)
@@ -107,7 +107,7 @@ namespace RaTweening
 		}
 
 		// API
-		public RaTweenDynamic<TargetT, ValueTRef, ValueT> SetStartRef(ValueTRef start)
+		public RaTweenDynamic<TargetT, ValueT> SetStartRef(TargetT start)
 		{
 			if(CanBeModified())
 			{
@@ -117,7 +117,7 @@ namespace RaTweening
 			return this;
 		}
 
-		public RaTweenDynamic<TargetT, ValueTRef, ValueT> SetStartValue(ValueT start)
+		public RaTweenDynamic<TargetT, ValueT> SetStartValue(ValueT start)
 		{
 			if(CanBeModified())
 			{
@@ -127,7 +127,7 @@ namespace RaTweening
 			return this;
 		}
 
-		public RaTweenDynamic<TargetT, ValueTRef, ValueT> SetEndRef(ValueTRef end)
+		public RaTweenDynamic<TargetT, ValueT> SetEndRef(TargetT end)
 		{
 			if(CanBeModified())
 			{
@@ -137,7 +137,7 @@ namespace RaTweening
 			return this;
 		}
 
-		public RaTweenDynamic<TargetT, ValueTRef, ValueT> SetEndValue(ValueT end)
+		public RaTweenDynamic<TargetT, ValueT> SetEndValue(ValueT end)
 		{
 			if(CanBeModified())
 			{
@@ -147,7 +147,7 @@ namespace RaTweening
 			return this;
 		}
 
-		public RaTweenDynamic<TargetT, ValueTRef, ValueT> SetTarget(TargetT target)
+		public RaTweenDynamic<TargetT, ValueT> SetTarget(TargetT target)
 		{
 			if(CanBeModified())
 			{
@@ -156,17 +156,16 @@ namespace RaTweening
 			return this;
 		}
 
-		public RaTweenDynamic<TargetT, ValueTRef, ValueT> SetEndIsDelta(bool enabled = true)
+		public RaTweenDynamic<TargetT, ValueT> SetEndIsDelta(bool enabled = true)
 		{
 			if(CanBeModified())
 			{
 				_endIsDelta = enabled;
 			}
-
 			return this;
 		}
 
-		public RaTweenDynamic<TargetT, ValueTRef, ValueT> SetStartDynamic(bool enabled = true)
+		public RaTweenDynamic<TargetT, ValueT> SetStartDynamic(bool enabled = true)
 		{
 			if(CanBeModified())
 			{
@@ -175,7 +174,7 @@ namespace RaTweening
 			return this;
 		}
 
-		public RaTweenDynamic<TargetT, ValueTRef, ValueT> SetDynamicSetupStep(DynamicSetupStep step)
+		public RaTweenDynamic<TargetT, ValueT> SetDynamicSetupStep(RaTweenDynamicSetupStep step)
 		{
 			if(CanBeModified())
 			{
@@ -188,16 +187,15 @@ namespace RaTweening
 
 		#region Protected Methods
 
-		protected abstract RaTweenDynamic<TargetT, ValueTRef, ValueT> DynamicClone();
+		protected abstract RaTweenDynamic<TargetT, ValueT> DynamicClone();
 
-		protected abstract ValueT GetStartFromRef(ValueTRef reference);
-		protected abstract ValueT GetEndFromRef(ValueTRef reference);
-		protected abstract ValueT GetDynamicStart(TargetT target);
 		protected abstract ValueT GetEndByDelta(ValueT start, ValueT delta);
+
+		protected abstract ValueT ReadValue(TargetT reference);
 
 		protected override RaTween RaTweenClone()
 		{
-			RaTweenDynamic<TargetT, ValueTRef, ValueT> clone = DynamicClone();
+			RaTweenDynamic<TargetT, ValueT> clone = DynamicClone();
 
 			// Generic
 			clone._target = _target;
@@ -222,7 +220,7 @@ namespace RaTweening
 		{
 			base.OnSetup();
 
-			if(_dynamicSetupStep == DynamicSetupStep.Setup)
+			if(_dynamicSetupStep == RaTweenDynamicSetupStep.Setup)
 			{
 				PerformDynamicSetup();
 			}
@@ -232,7 +230,7 @@ namespace RaTweening
 		{
 			base.OnStart();
 
-			if(_dynamicSetupStep == DynamicSetupStep.Start)
+			if(_dynamicSetupStep == RaTweenDynamicSetupStep.Start)
 			{
 				PerformDynamicSetup();
 			}
@@ -267,31 +265,21 @@ namespace RaTweening
 		{
 			if(_dynamicStart)
 			{
-				Start = GetDynamicStart(Target);
+				Start = ReadValue(Target);
 			}
 			else
 			{
-				Start = _useStartRef ? GetStartFromRef(_startRef) : _startValue;
+				Start = _useStartRef ? ReadValue(_startRef) : _startValue;
 			}
 
 			if(_useEndRef)
 			{
-				End = _endIsDelta ? GetEndByDelta(Start, GetEndFromRef(_endRef)) : GetEndFromRef(_endRef);
+				End = _endIsDelta ? GetEndByDelta(Start, ReadValue(_endRef)) : ReadValue(_endRef);
 			}
 			else
 			{
 				End = _endIsDelta ? GetEndByDelta(Start, _endValue) : _endValue;
 			}
-		}
-
-		#endregion
-
-		#region Nested
-
-		public enum DynamicSetupStep
-		{
-			Setup,
-			Start
 		}
 
 		#endregion
@@ -301,5 +289,12 @@ namespace RaTweening
 	{
 		Type GetTargetTypeRaw();
 		void SetTargetRaw(object value);
+
+	}
+
+	public enum RaTweenDynamicSetupStep
+	{
+		Setup,
+		Start
 	}
 }

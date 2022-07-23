@@ -4,7 +4,7 @@ using UnityEngine;
 namespace RaTweening
 {
 	[Serializable]
-	public class RaTweenPosition : RaTweenDynamic<Transform, Transform, Vector3>
+	public class RaTweenPosition : RaTweenDynamic<Transform, Vector3>
 	{
 		public RaTweenPosition()
 			: base()
@@ -24,9 +24,15 @@ namespace RaTweening
 
 		}
 
+		public RaTweenPosition(Transform target, Vector3 startPos, Transform endPos, float duration)
+		: base(target, startPos, duration)
+		{
+			SetEndRef(endPos);
+		}
+
 		#region Protected Methods
 
-		protected override RaTweenDynamic<Transform, Transform, Vector3> DynamicClone()
+		protected override RaTweenDynamic<Transform, Vector3> DynamicClone()
 		{
 			return new RaTweenPosition();
 		}
@@ -37,17 +43,7 @@ namespace RaTweening
 			target.position = start + (delta * normalizedValue);
 		}
 
-		protected override Vector3 GetStartFromRef(Transform reference)
-		{
-			return reference.position;
-		}
-
-		protected override Vector3 GetDynamicStart(Transform target)
-		{
-			return target.position;
-		}
-
-		protected override Vector3 GetEndFromRef(Transform reference)
+		protected override Vector3 ReadValue(Transform reference)
 		{
 			return reference.position;
 		}
@@ -87,6 +83,11 @@ namespace RaTweening
 		public static RaTweenPosition TweenMove(this Transform self, Vector3 startPos, Vector3 endPos, float duration)
 		{
 			return new RaTweenPosition(self, startPos, endPos, duration).Play();
+		}
+
+		public static RaTweenPosition TweenMove(this Transform self, Vector3 startPos, Transform endTarget, float duration)
+		{
+			return new RaTweenPosition(self, startPos, endTarget, duration).Play();
 		}
 	}
 
