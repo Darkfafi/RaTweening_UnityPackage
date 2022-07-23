@@ -5,7 +5,7 @@ using UnityEngine;
 namespace RaTweening
 {
 	[Serializable]
-	public abstract class RaTweenDynamic<TargetT, ValueT> : RaTween, IRaTweenDynamic
+	public abstract class RaTweenDynamic<TargetT, ValueT> : RaTween, IRaTweenTarget
 	{
 		#region Editor Variables
 
@@ -93,12 +93,12 @@ namespace RaTweening
 		#region Public Methods
 
 		// Raw
-		Type IRaTweenDynamic.GetTargetTypeRaw()
+		Type IRaTweenTarget.GetTargetTypeRaw()
 		{
 			return typeof(TargetT);
 		}
 
-		void IRaTweenDynamic.SetTargetRaw(object value)
+		void IRaTweenTarget.SetTargetRaw(object value)
 		{
 			if(value is TargetT target)
 			{
@@ -283,13 +283,6 @@ namespace RaTweening
 		}
 
 		#endregion
-	}
-
-	public interface IRaTweenDynamic
-	{
-		Type GetTargetTypeRaw();
-		void SetTargetRaw(object value);
-
 	}
 
 	public enum RaTweenDynamicSetupStep

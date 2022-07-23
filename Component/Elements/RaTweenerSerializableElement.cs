@@ -19,17 +19,17 @@ namespace RaTweening
 			_tween = (RaTweenCore)Activator.CreateInstance(tweenType);
 
 			// Dynamic Tween Auto Targeting
-			if(_tween is IRaTweenDynamic dynamic)
+			if(_tween is IRaTweenTarget targetTween)
 			{
-				Type type = dynamic.GetTargetTypeRaw();
+				Type type = targetTween.GetTargetTypeRaw();
 
 				if(IsOfType<GameObject>(type))
 				{
-					dynamic.SetTargetRaw(gameObject);
+					targetTween.SetTargetRaw(gameObject);
 				}
 				else if(IsOfType<Component>(type))
 				{
-					dynamic.SetTargetRaw(gameObject.GetComponent(type));
+					targetTween.SetTargetRaw(gameObject.GetComponent(type));
 				}
 			}
 
