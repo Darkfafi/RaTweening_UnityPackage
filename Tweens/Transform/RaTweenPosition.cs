@@ -1,5 +1,6 @@
 ﻿using System;
 using UnityEngine;
+using static RaTweening.RaVector3Options;
 
 namespace RaTweening
 {
@@ -10,7 +11,7 @@ namespace RaTweening
 
 		[Header("RaTweenPosition")]
 		[SerializeField]
-		private AxisOption _excludeAxis = AxisOption.None;
+		private Axis _excludeAxis = Axis.None;
 
 		#endregion
 
@@ -40,7 +41,7 @@ namespace RaTweening
 
 		#region Internal Methods
 
-		internal void SetExcludeAxisAPIInternal(AxisOption excludeAxis)
+		internal void SetExcludeAxisAPIInternal(Axis excludeAxis)
 		{
 			if(CanBeModified())
 			{
@@ -48,24 +49,11 @@ namespace RaTweening
 			}
 		}
 
-		internal void OnlyInclideAxisAPIInternal(AxisOption inclAxis)
+		internal void OnlyIncludeAxisAPIInternal(Axis inclAxis)
 		{
 			if(CanBeModified())
 			{
-				if(!inclAxis.HasFlag(AxisOption.X))
-				{
-					_excludeAxis |= AxisOption.X;
-				}
-
-				if(!inclAxis.HasFlag(AxisOption.Y))
-				{
-					_excludeAxis |= AxisOption.Y;
-				}
-
-				if(!inclAxis.HasFlag(AxisOption.Z))
-				{
-					_excludeAxis |= AxisOption.Z;
-				}
+				_excludeAxis = GetOnlyIncludeAxes(inclAxis);
 			}
 		}
 
@@ -83,24 +71,7 @@ namespace RaTweening
 		protected override void DynamicEvaluation(float normalizedValue, Transform target, Vector3 start, Vector3 end)
 		{
 			Vector3 delta = end - start;
-			Vector3 finalValue = start + (delta * normalizedValue);
-
-			if(_excludeAxis.HasFlag(AxisOption.X))
-			{
-				finalValue.x = target.position.x;
-			}
-
-			if(_excludeAxis.HasFlag(AxisOption.Y))
-			{
-				finalValue.y = target.position.y;
-			}
-
-			if(_excludeAxis.HasFlag(AxisOption.Z))
-			{
-				finalValue.z = target.position.z;
-			}
-
-			target.position = finalValue;
+			target.position = ApplyExcludeAxes(target.position, start + (delta * normalizedValue), _excludeAxis);
 		}
 
 		protected override Vector3 ReadValue(Transform reference)
@@ -114,19 +85,6 @@ namespace RaTweening
 		}
 
 		#endregion
-
-		#region Nested
-
-		[Flags]
-		public enum AxisOption
-		{
-			None	= 0, 
-			X		= 1, 
-			Y		= 2, 
-			Z		= 4
-		}
-
-		#endregion
 	}
 
 	#region Extensions
@@ -136,19 +94,22 @@ namespace RaTweening
 		public static RaTweenPosition TweenMoveX(this Transform self, float posX, float duration)
 		{
 			return new RaTweenPosition(self, Vector3.one * posX, duration)
-				.OnlyIncludeAxis(RaTweenPosition.AxisOption.X).Play();
+				.OnlyIncludeAxis(Axis.X)
+				.Play();
 		}
 
 		public static RaTweenPosition TweenMoveY(this Transform self, float posY, float duration)
 		{
 			return new RaTweenPosition(self, Vector3.one * posY, duration)
-				.OnlyIncludeAxis(RaTweenPosition.AxisOption.Y).Play();
+				.OnlyIncludeAxis(Axis.Y)
+				.Play();
 		}
 
 		public static RaTweenPosition TweenMoveZ(this Transform self, float posZ, float duration)
 		{
 			return new RaTweenPosition(self, Vector3.one * posZ, duration)
-				.OnlyIncludeAxis(RaTweenPosition.AxisOption.Z).Play();
+				.OnlyIncludeAxis(Axis.Z)
+				.Play();
 		}
 
 		public static RaTweenPosition TweenMove(this Transform self, Vector3 pos, float duration)
@@ -166,15 +127,15 @@ namespace RaTweening
 			return new RaTweenPosition(self, startPos, endTarget, duration).Play();
 		}
 
-		public static RaTweenPosition SetExcludeAxis(this RaTweenPosition self, RaTweenPosition.AxisOption excludeAxis)
+		public static RaTweenPosition SetExcludeAxis(this RaTweenPosition self, Axis excludeAxis)
 		{
 			self.SetExcludeAxisAPIInternal(excludeAxis);
 			return self;
 		}
 
-		public static RaTweenPosition OnlyIncludeAxis(this RaTweenPosition self, RaTweenPosition.AxisOption includeAxis)
+		public static RaTweenPosition OnlyIncludeAxis(this RaTweenPosition self, Axis includeAxis)
 		{
-			self.OnlyInclideAxisAPIInternal(includeAxis);
+			self.OnlyIncludeAxisAPIInternal(includeAxis);
 			return self;
 		}
 	}
