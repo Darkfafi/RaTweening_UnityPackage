@@ -109,19 +109,19 @@ namespace RaTweening
 				.Play();
 		}
 
-		public static RaTweenSizeDelta TweenSize(this RectTransform self, Vector3 size, float duration)
+		public static RaTweenSizeDelta TweenSize(this RectTransform self, Vector2 size, float duration)
 		{
 			return new RaTweenSizeDelta(self, size, duration).Play();
 		}
 
-		public static RaTweenSizeDelta TweenSize(this RectTransform self, Vector3 startSize, Vector3 endSize, float duration)
+		public static RaTweenSizeDelta TweenSize(this RectTransform self, Vector2 startSize, Vector2 endSize, float duration)
 		{
 			return new RaTweenSizeDelta(self, startSize, endSize, duration).Play();
 		}
 
-		public static RaTweenSizeDelta TweenSize(this RectTransform self, Vector3 startPos, RectTransform endTarget, float duration)
+		public static RaTweenSizeDelta TweenSize(this RectTransform self, Vector2 startSize, RectTransform endTarget, float duration)
 		{
-			return new RaTweenSizeDelta(self, startPos, endTarget, duration).Play();
+			return new RaTweenSizeDelta(self, startSize, endTarget, duration).Play();
 		}
 	}
 
