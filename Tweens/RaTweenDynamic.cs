@@ -193,6 +193,13 @@ namespace RaTweening
 
 		protected abstract ValueT ReadValue(TargetT reference);
 
+		protected override void SetDefaultValues()
+		{
+			base.SetDefaultValues();
+			SetStartValue(Target != null ? ReadValue(Target) : default);
+			SetEndValue(default);
+		}
+
 		protected override RaTween RaTweenClone()
 		{
 			RaTweenDynamic<TargetT, ValueT> clone = DynamicClone();

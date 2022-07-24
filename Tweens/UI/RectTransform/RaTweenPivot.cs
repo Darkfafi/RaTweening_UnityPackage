@@ -62,6 +62,13 @@ namespace RaTweening.UI.RaRectTransform
 
 		#region Protected Methods
 
+		protected override void SetDefaultValues()
+		{
+			base.SetDefaultValues();
+			SetStartValue(Target != null ? ReadValue(Target) : Vector2.one * 0.5f);
+			SetEndValue(Vector2.one * 0.5f);
+		}
+
 		protected override RaTweenDynamic<RectTransform, Vector2> DynamicClone()
 		{
 			RaTweenPivot tween = new RaTweenPivot();
