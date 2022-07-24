@@ -10,7 +10,7 @@ namespace RaTweening.RaSpriteRenderer
 	{
 		#region Editor Variables
 
-		[Header("RaTweenSRColor")]
+		[Header("RaTweenColor")]
 		[SerializeField]
 		private Channel _excludeChannels = Channel.None;
 
@@ -29,7 +29,7 @@ namespace RaTweening.RaSpriteRenderer
 		}
 
 		public RaTweenColor(SpriteRenderer target, Color endColor, float duration)
-			: base(target, endColor, endColor, duration)
+			: base(target, endColor, duration)
 		{
 
 		}

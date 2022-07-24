@@ -32,7 +32,7 @@ namespace RaTweening.RaTransform
 		}
 
 		public RaTweenRotation(Transform target, Vector3 endRot, float duration)
-			: base(target, endRot, endRot, duration)
+			: base(target, endRot, duration)
 		{
 
 		}
@@ -72,29 +72,53 @@ namespace RaTweening.RaTransform
 
 		protected override void DynamicEvaluation(float normalizedValue, Transform target, Vector3 start, Vector3 end)
 		{
-			target.rotation = Quaternion.SlerpUnclamped
+			WriteValue(target, Quaternion.SlerpUnclamped
 			(
-				Quaternion.Euler(start), 
-				Quaternion.Euler(ApplyExcludeAxes(target.rotation.eulerAngles, end, _excludeAxis)), 
+				Quaternion.Euler(start),
+				Quaternion.Euler(ApplyExcludeAxes(ReadValue(target), end, _excludeAxis)),
 				normalizedValue
-			);
+			));
 		}
 
 		protected override RaTweenDynamic<Transform, Vector3> DynamicClone()
 		{
 			RaTweenRotation tween = new RaTweenRotation();
 			tween._excludeAxis = _excludeAxis;
+			tween._localRotation = _localRotation;
 			return tween;
 		}
 
 		protected override Vector3 ReadValue(Transform reference)
 		{
-			return reference.rotation.eulerAngles;
+			if(_localRotation)
+			{
+				return reference.localRotation.eulerAngles;
+			}
+			else
+			{
+				return reference.rotation.eulerAngles;
+			}
 		}
 
 		protected override Vector3 GetEndByDelta(Vector3 start, Vector3 delta)
 		{
 			return start + delta;
+		}
+
+		#endregion
+
+		#region Private Methods
+
+		private void WriteValue(Transform reference, Quaternion value)
+		{
+			if(_localRotation)
+			{
+				reference.localRotation = value;
+			}
+			else
+			{
+				reference.rotation = value;
+			}
 		}
 
 		#endregion
