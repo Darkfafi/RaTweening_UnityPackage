@@ -317,68 +317,61 @@ namespace RaTweening
 			TweenState = state;
 		}
 
-		internal RaTweenCore SetDelayAPIInternal(float delay)
+		internal void SetDelayAPIInternal(float delay)
 		{
 			if(CanBeModified())
 			{
 				_delaySerialized = delay;
 				_delay.SetDuration(delay);
 			}
-			return this;
 		}
 
-		internal RaTweenCore SetLoopingAPIInternal(int loopAmount)
+		internal void SetLoopingAPIInternal(int loopAmount)
 		{
 			if(CanBeModified())
 			{
 				_loopsSerialized = loopAmount;
 			}
-			return this;
 		}
 
-		internal RaTweenCore OnSetupAPIInternal(CallbackHandler callback)
+		internal void OnSetupAPIInternal(CallbackHandler callback)
 		{
 			if(CanBeModified())
 			{
 				_onSetupEvent += callback;
 			}
-			return this;
 		}
 
-		public RaTweenCore OnStartAPIInternal(CallbackHandler callback)
+		public void OnStartAPIInternal(CallbackHandler callback)
 		{
 			if(CanBeModified())
 			{
 				_onStartEvent += callback;
 			}
-			return this;
 		}
 
-		internal RaTweenCore OnLoopAPIInternal(LoopCallbackHandler callback)
+		internal void OnLoopAPIInternal(LoopCallbackHandler callback)
 		{
 			if(CanBeModified())
 			{
 				_onLoopEvent += callback;
 			}
-			return this;
 		}
 
-		internal RaTweenCore OnCompleteAPIInternal(CallbackHandler callback)
+		internal void OnCompleteAPIInternal(CallbackHandler callback)
 		{
 			if(CanBeModified())
 			{
 				_onCompletedEvent += callback;
 			}
-			return this;
 		}
 
-		internal RaTweenCore OnKillAPIInternal(CallbackHandler callback)
+		internal void OnKillAPIInternal(CallbackHandler callback)
 		{
 			if(CanBeModified())
 			{
 				_onKillEvent += callback;
 			}
-			return this;
 		}
 
 		#endregion
@@ -387,23 +380,21 @@ namespace RaTweening
 
 		protected abstract void SetDefaultValues();
 
-		protected RaTweenCore SetInfiniteDuration()
+		protected void SetInfiniteDuration()
 		{
 			if(CanBeModified())
 			{
 				_process.SetInfiniteDuration();
 			}
-			return this;
 		}
 
-		protected RaTweenCore SetDuration(float duration)
+		protected void SetDuration(float duration)
 		{
 			if(CanBeModified())
 			{
 				_process.SetDuration(duration);
 				OnSetDuration(duration);
 			}
-			return this;
 		}
 
 		protected virtual void OnSetup()
@@ -490,7 +481,7 @@ namespace RaTweening
 		#endregion
 	}
 
-	public static class RaTweenCoreExtensions
+	public static partial class RaTweenUtilExtensions
 	{
 		public static TweenT Play<TweenT>(this TweenT self)
 			where TweenT : RaTweenCore

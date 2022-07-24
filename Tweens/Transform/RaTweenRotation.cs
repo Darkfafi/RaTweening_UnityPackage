@@ -1,8 +1,9 @@
 ﻿using System;
 using UnityEngine;
 using static RaTweening.RaVector3Options;
+using RaTweening.RaTransform;
 
-namespace RaTweening
+namespace RaTweening.RaTransform
 {
 	[Serializable]
 	public class RaTweenRotation : RaTweenDynamic<Transform, Vector3>
@@ -12,6 +13,9 @@ namespace RaTweening
 		[Header("RaTweenRotation")]
 		[SerializeField]
 		private Axis _excludeAxis = Axis.None;
+
+		[SerializeField]
+		private bool _localRotation = false;
 
 		#endregion
 
@@ -33,22 +37,33 @@ namespace RaTweening
 
 		}
 
-		#region Internal Methods
+		#region Public Methods
 
-		internal void SetExcludeAxisAPIInternal(Axis excludeAxis)
+		public RaTweenRotation SetLocalRotation(bool isLocal = true)
+		{
+			if(CanBeModified())
+			{
+				_localRotation = isLocal;
+			}
+			return this;
+		}
+
+		public RaTweenRotation SetExcludeAxis(Axis excludeAxis)
 		{
 			if(CanBeModified())
 			{
 				_excludeAxis = excludeAxis;
 			}
+			return this;
 		}
 
-		internal void OnlyIncludeAxisAPIInternal(Axis inclAxis)
+		public RaTweenRotation OnlyIncludeAxis(Axis inclAxis)
 		{
 			if(CanBeModified())
 			{
 				_excludeAxis = GetOnlyIncludeAxes(inclAxis);
 			}
+			return this;
 		}
 
 		#endregion
@@ -84,11 +99,13 @@ namespace RaTweening
 
 		#endregion
 	}
+}
 
-
+namespace RaTweening
+{
 	#region Extensions
 
-	public static class RaTweenRotationExtensions
+	public static partial class RaTweenUtilExtensions
 	{
 		public static RaTweenRotation TweenRotateX(this Transform self, float rotX, float duration)
 		{
@@ -119,18 +136,6 @@ namespace RaTweening
 		public static RaTweenRotation TweenRotate(this Transform self, Vector3 startRot, Vector3 endRot, float duration)
 		{
 			return new RaTweenRotation(self, startRot, endRot, duration).Play();
-		}
-
-		public static RaTweenRotation SetExcludeAxis(this RaTweenRotation self, Axis excludeAxis)
-		{
-			self.SetExcludeAxisAPIInternal(excludeAxis);
-			return self;
-		}
-
-		public static RaTweenRotation OnlyIncludeAxis(this RaTweenRotation self, Axis includeAxis)
-		{
-			self.OnlyIncludeAxisAPIInternal(includeAxis);
-			return self;
 		}
 	}
 

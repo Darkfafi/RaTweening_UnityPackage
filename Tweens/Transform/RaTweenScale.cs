@@ -1,7 +1,8 @@
 ﻿using UnityEngine;
 using static RaTweening.RaVector3Options;
+using RaTweening.RaTransform;
 
-namespace RaTweening
+namespace RaTweening.RaTransform
 {
 	public class RaTweenScale : RaTweenDynamic<Transform, Vector3>
 	{
@@ -37,22 +38,24 @@ namespace RaTweening
 			SetEndRef(endScale);
 		}
 
-		#region Internal Methods
+		#region Public Methods
 
-		internal void SetExcludeAxisAPIInternal(Axis excludeAxis)
+		public RaTweenScale SetExcludeAxis(Axis excludeAxis)
 		{
 			if(CanBeModified())
 			{
 				_excludeAxis = excludeAxis;
 			}
+			return this;
 		}
 
-		internal void OnlyIncludeAxisAPIInternal(Axis inclAxis)
+		public RaTweenScale OnlyIncludeAxis(Axis inclAxis)
 		{
 			if(CanBeModified())
 			{
 				_excludeAxis = GetOnlyIncludeAxes(inclAxis);
 			}
+			return this;
 		}
 
 		#endregion
@@ -91,11 +94,13 @@ namespace RaTweening
 
 		#endregion
 	}
+}
 
-
+namespace RaTweening
+{
 	#region Extensions
 
-	public static class RaTweenScaleExtensions
+	public static partial class RaTweenUtilExtensions
 	{
 		public static RaTweenScale TweenScaleX(this Transform self, float scaleX, float duration)
 		{
@@ -141,18 +146,6 @@ namespace RaTweening
 		public static RaTweenScale TweenScale(this Transform self, Vector3 startScale, Transform endScale, float duration)
 		{
 			return new RaTweenScale(self, startScale, endScale, duration).Play();
-		}
-
-		public static RaTweenScale SetExcludeAxis(this RaTweenScale self, Axis excludeAxis)
-		{
-			self.SetExcludeAxisAPIInternal(excludeAxis);
-			return self;
-		}
-
-		public static RaTweenScale OnlyIncludeAxis(this RaTweenScale self, Axis includeAxis)
-		{
-			self.OnlyIncludeAxisAPIInternal(includeAxis);
-			return self;
 		}
 	}
 

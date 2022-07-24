@@ -136,6 +136,9 @@ namespace RaTweening
 		{
 			Type[] tweenTypes = GetAllTweenTypes();
 
+			string ns = nameof(RaTweening) + ".";
+			string[] searchTypes = tweenTypes.Select(x => x.FullName.Replace(ns, "")).ToArray();
+
 			SearchWindow window = null;
 
 			window = SearchWindow.OpenWindow((index) =>
@@ -147,7 +150,7 @@ namespace RaTweening
 					window.Close();
 				}
 				window = null;
-			}, tweenTypes);
+			}, searchTypes);
 			return window;
 		}
 

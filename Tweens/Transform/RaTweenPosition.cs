@@ -1,8 +1,9 @@
 ﻿using System;
 using UnityEngine;
 using static RaTweening.RaVector3Options;
+using RaTweening.RaTransform;
 
-namespace RaTweening
+namespace RaTweening.RaTransform
 {
 	[Serializable]
 	public class RaTweenPosition : RaTweenDynamic<Transform, Vector3>
@@ -12,6 +13,9 @@ namespace RaTweening
 		[Header("RaTweenPosition")]
 		[SerializeField]
 		private Axis _excludeAxis = Axis.None;
+
+		[SerializeField]
+		private bool _localPosition = false;
 
 		#endregion
 
@@ -39,22 +43,33 @@ namespace RaTweening
 			SetEndRef(endPos);
 		}
 
-		#region Internal Methods
+		#region Public Methods
 
-		internal void SetExcludeAxisAPIInternal(Axis excludeAxis)
+		public RaTweenPosition SetLocalPosition(bool isLocal = true)
+		{
+			if(CanBeModified())
+			{
+				_localPosition = isLocal;
+			}
+			return this;
+		}
+
+		public RaTweenPosition SetExcludeAxis(Axis excludeAxis)
 		{
 			if(CanBeModified())
 			{
 				_excludeAxis = excludeAxis;
 			}
+			return this;
 		}
 
-		internal void OnlyIncludeAxisAPIInternal(Axis inclAxis)
+		public RaTweenPosition OnlyIncludeAxis(Axis inclAxis)
 		{
 			if(CanBeModified())
 			{
 				_excludeAxis = GetOnlyIncludeAxes(inclAxis);
 			}
+			return this;
 		}
 
 		#endregion
@@ -65,18 +80,26 @@ namespace RaTweening
 		{
 			RaTweenPosition tween = new RaTweenPosition();
 			tween._excludeAxis = _excludeAxis;
+			tween._localPosition = _localPosition;
 			return tween;
 		}
 
 		protected override void DynamicEvaluation(float normalizedValue, Transform target, Vector3 start, Vector3 end)
 		{
 			Vector3 delta = end - start;
-			target.position = ApplyExcludeAxes(target.position, start + (delta * normalizedValue), _excludeAxis);
+			WriteValue(target, ApplyExcludeAxes(ReadValue(target), start + (delta * normalizedValue), _excludeAxis));
 		}
 
 		protected override Vector3 ReadValue(Transform reference)
 		{
-			return reference.position;
+			if(_localPosition)
+			{
+				return reference.localPosition;
+			}
+			else
+			{
+				return reference.position;
+			}
 		}
 
 		protected override Vector3 GetEndByDelta(Vector3 start, Vector3 delta)
@@ -85,11 +108,30 @@ namespace RaTweening
 		}
 
 		#endregion
-	}
 
+		#region Private Methods
+
+		private void WriteValue(Transform reference, Vector3 value)
+		{
+			if(_localPosition)
+			{
+				reference.localPosition = value;
+			}
+			else
+			{
+				reference.position = value;
+			}
+		}
+
+		#endregion
+	}
+}
+
+namespace RaTweening
+{
 	#region Extensions
 
-	public static class RaTweenPositionExtensions
+	public static partial class RaTweenUtilExtensions
 	{
 		public static RaTweenPosition TweenMoveX(this Transform self, float posX, float duration)
 		{
@@ -125,18 +167,6 @@ namespace RaTweening
 		public static RaTweenPosition TweenMove(this Transform self, Vector3 startPos, Transform endTarget, float duration)
 		{
 			return new RaTweenPosition(self, startPos, endTarget, duration).Play();
-		}
-
-		public static RaTweenPosition SetExcludeAxis(this RaTweenPosition self, Axis excludeAxis)
-		{
-			self.SetExcludeAxisAPIInternal(excludeAxis);
-			return self;
-		}
-
-		public static RaTweenPosition OnlyIncludeAxis(this RaTweenPosition self, Axis includeAxis)
-		{
-			self.OnlyIncludeAxisAPIInternal(includeAxis);
-			return self;
 		}
 	}
 

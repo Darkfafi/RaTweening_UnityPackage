@@ -1,10 +1,11 @@
 ﻿using System;
 using UnityEngine;
+using RaTweening.RaSpriteRenderer;
 
-namespace RaTweening
+namespace RaTweening.RaSpriteRenderer
 {
 	[Serializable]
-	public class RaTweenSRSprites : RaTween, IRaTweenTarget
+	public class RaTweenSpriteSequence : RaTween, IRaTweenTarget
 	{
 		#region Editor Variables
 
@@ -23,13 +24,13 @@ namespace RaTweening
 
 		#endregion
 
-		public RaTweenSRSprites()
+		public RaTweenSpriteSequence()
 			: base()
 		{
 		
 		}
 
-		public RaTweenSRSprites(SpriteRenderer target, Sprite[] sprites, float duration)
+		public RaTweenSpriteSequence(SpriteRenderer target, Sprite[] sprites, float duration)
 			: base(duration)
 		{
 			_target = target;
@@ -48,7 +49,7 @@ namespace RaTweening
 			}
 		}
 
-		public RaTweenSRSprites SetTarget(SpriteRenderer target)
+		public RaTweenSpriteSequence SetTarget(SpriteRenderer target)
 		{
 			if(CanBeModified())
 			{
@@ -57,7 +58,7 @@ namespace RaTweening
 			return this;
 		}
 
-		public RaTweenSRSprites SetSprites(Sprite[] sprites)
+		public RaTweenSpriteSequence SetSprites(Sprite[] sprites)
 		{
 			if(CanBeModified())
 			{
@@ -90,7 +91,7 @@ namespace RaTweening
 
 		protected override RaTween RaTweenClone()
 		{
-			RaTweenSRSprites tween = new RaTweenSRSprites();
+			RaTweenSpriteSequence tween = new RaTweenSpriteSequence();
 			tween._sprites = _sprites;
 			tween._target = _target;
 			return tween;
@@ -98,14 +99,17 @@ namespace RaTweening
 
 		#endregion
 	}
+}
 
+namespace RaTweening
+{
 	#region Extensions
 
-	public static class RaTweenSRSpritesExtensions
+	public static partial class RaTweenUtilExtensions
 	{
-		public static RaTweenSRSprites TweenSprites(this SpriteRenderer self, Sprite[] sprites, float duration)
+		public static RaTweenSpriteSequence TweenSpriteSequence(this SpriteRenderer self, Sprite[] sprites, float duration)
 		{
-			return new RaTweenSRSprites(self, sprites, duration).Play();
+			return new RaTweenSpriteSequence(self, sprites, duration).Play();
 		}
 	}
 

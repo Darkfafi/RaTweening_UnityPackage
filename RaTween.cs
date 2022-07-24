@@ -78,7 +78,7 @@ namespace RaTweening
 
 		#region Internal Methods
 
-		internal RaTween SetEasingAPIInternal(RaEasingType easing)
+		internal void SetEasingAPIInternal(RaEasingType easing)
 		{
 			if(CanBeModified())
 			{
@@ -86,10 +86,9 @@ namespace RaTweening
 				_useCurveEasing = false;
 				_useCurveEasingDuration = false;
 			}
-			return this;
 		}
 
-		internal RaTween SetEasingAPIInternal(AnimationCurve easing, bool inclDuration)
+		internal void SetEasingAPIInternal(AnimationCurve easing, bool inclDuration)
 		{
 			if(CanBeModified())
 			{
@@ -107,25 +106,23 @@ namespace RaTweening
 					SetDuration(_duration);
 				}
 			}
-			return this;
 		}
 
-		internal RaTween AddModifierAPIInternal(RaModifierType modifier)
+		internal void AddModifierAPIInternal(RaModifierType modifier)
 		{
-			return SetModifierAPIInternal(_modifierType | modifier);
+			SetModifierAPIInternal(_modifierType | modifier);
 		}
 
-		internal RaTween SetModifierAPIInternal(RaModifierType modifier)
+		internal void SetModifierAPIInternal(RaModifierType modifier)
 		{
 			if(CanBeModified())
 			{
 				_modifierType = modifier;
 				_useCurveModifier = false;
 			}
-			return this;
 		}
 
-		internal RaTween SetModifierAPIInternal(AnimationCurve modifier)
+		internal void SetModifierAPIInternal(AnimationCurve modifier)
 		{
 			if(CanBeModified())
 			{
@@ -133,7 +130,6 @@ namespace RaTweening
 				_curveModifier = modifier;
 				_useCurveModifier = true;
 			}
-			return this;
 		}
 
 		#endregion
